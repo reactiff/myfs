@@ -1,0 +1,12 @@
+html, body {
+  background-color: rgb(32, 28, 34);
+}
+#root {
+  color: cyan;
+  width: 100%;
+}
+.item { 
+  background-color: rgba(64,0,0,0.1);
+  margin-bottom: 5px;
+  color: rgb(155, 224, 155);
+}

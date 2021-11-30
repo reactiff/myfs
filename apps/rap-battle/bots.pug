@@ -1,0 +1,22 @@
+mixin bot(index)
+    div.bot(id="bot"+index)
+        div(id="info"+index)
+        select(id="voiceSelect"+index)
+        // Textarea
+        input.txt(id="text"+index, type="text", value="Hi")
+        div.h-slider
+            label(for="rate"+index) Rate
+            input(id="rate"+index, type="range", min="0.5", max="2", value="1", step="0.1")
+            div.rate-value 1
+            div.clearfix
+        div.h-slider
+            label(for="pitch"+index) Pitch
+            input(id="pitch"+index, type="range", min="0", max="2", value="1", step="0.1")
+            div.pitch-value 1
+            div.clearfix
+        div.controls
+            button(id="play"+index) Play
+
+div.bots
+    +bot(0)
+    

@@ -1,0 +1,55 @@
+{
+  "name": "myfs-cli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Command line app meta utility",
+  "type": "module",
+  "main": "bin/index.js",
+  "scripts": {
+    "lint": "eslint",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rick Ellis (https://riquire.com)",
+  "license": "MIT",
+  "bin": {
+    "myfs": "./bin/index.js"
+  },
+  "dependencies": {
+    "ajv": "^8.7.1",
+    "boxen": "^5.0.1",
+    "chalk": "^4.1.2",
+    "clarify": "^2.1.0",
+    "cli-progress": "^3.9.1",
+    "columnify": "^1.5.4",
+    "configstore": "^6.0.0",
+    "diff": "^5.0.0",
+    "dotenv": "^10.0.0",
+    "evernote": "^2.0.5",
+    "express": "^4.17.1",
+    "faye-websocket": "^0.11.4",
+    "jsdom": "^18.0.1",
+    "known-css-properties": "^0.23.0",
+    "lodash": "^4.17.21",
+    "minimatch": "^3.0.4",
+    "moment": "^2.29.1",
+    "node-ssh": "^12.0.2",
+    "open": "^8.4.0",
+    "prompt": "^1.2.0",
+    "pug": "^3.0.2",
+    "readdir-glob": "^1.1.1",
+    "superagent": "^6.1.0",
+    "trace": "^3.1.1",
+    "uuid": "^8.3.2",
+    "yargs": "^17.1.1"
+  },
+  "devDependencies": {
+    "@babel/helper-validator-identifier": "^7.15.7",
+    "eslint": "^8.2.0",
+    "jshint": "^2.13.1"
+  },
+  "workspaces": [
+    "commands",
+    "utils",
+    "hyperspace"
+  ]
+}

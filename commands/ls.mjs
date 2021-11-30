@@ -1,0 +1,75 @@
+import MyFS from "utils/myfs.mjs";
+import { printResults } from "./ls/printResults.mjs";
+import { summaryTable } from "./ls/summaryTable.mjs";
+import { terminalServeSearchResults } from "./ls/terminalServeSearchResults.mjs";
+import { initOptions } from "./ls/initOptions.mjs";
+import inspectErrorStack from "utils/inspectErrorStack.mjs";
+import webbify from "hyperspace/webbify.mjs";
+
+// EXPORTS
+export { options } from "./ls/options.mjs";
+
+function print(results, scope) {
+  const { dir, opts } = scope;
+  if (results.items.length && !opts.search) {
+    printResults(results, { dir, order: opts.order });
+    // summaryTable(results.items, { dir, palette: { table: { bg: "#002200" } } });
+  }
+}
+
+export async function execute(args, argv, resolve) {
+  try {
+   
+    const opts = initOptions(args, argv);
+    const { dir } = opts;
+
+    const serveResults = opts.serve ? webbify : terminalServeSearchResults;
+
+    const myfs = new MyFS();
+
+    myfs
+      .options(opts)
+      .path(dir)
+      .sort(opts.order)
+      .onResults((update) => {
+        debugger;
+        serveResults(update, { dir: opts.dir, myfs, opts });
+      });
+
+    if (opts.dirs) { myfs.directories(); }
+    if (opts.files) { myfs.files(); }
+
+    const results = myfs.execute();
+        
+    if (!opts.webbify) {
+      print(results, { dir, opts });
+      resolve();
+      return;
+    }
+    
+    ///////////////////////////////
+    // FROM HERE ONLY WEB RESULTS
+
+    const schema = {
+      title: "Search Results",
+      src: "hyperspace/static/ls/",
+      hotUpdate: true,
+    };
+
+    const data = results.items
+      .map(i => ({ ...{ title: i.name }, ...i.stat }));
+    
+    webbify(schema)
+      .then(p => 
+        p.render({ 
+          target: "main", 
+          template: "item", 
+          data 
+        }));
+              
+
+    resolve();
+  } catch (ex) {
+    inspectErrorStack(ex);
+  }
+}
