@@ -11,7 +11,7 @@ import { options } from "./options.mjs";
 import minimatch from "minimatch";
 
 export function initOptions(args, argv) {
-
+  
   const opts = {
     order: argv.order || argv.O || options.O.default,
     global: argv.global || argv.G || options.G.default,

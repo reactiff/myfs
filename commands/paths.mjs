@@ -17,6 +17,12 @@ export const options = {
     type: 'boolean',
     demand: false,
   },
+  'CLR': {
+    alias: 'clear',
+    description: 'Clear all paths',
+    type: 'boolean',
+    demand: false,
+  },
 
 };
 
@@ -31,11 +37,21 @@ export async function execute(args, argv, resolve, fsitem) {
       deletePath(argv.D||argv.delete);
     }
 
-    const items = store.get('paths') || [];
-    console.group(chalk.yellow('PATHS:'))
-    for (let p of items) {
-      console.log(p);
+    if (argv.CLR||argv.clear) {
+      clearAllPaths();
     }
+
+    const items = store.get('paths') || [];
+
+    if (items.length) {
+      console.group(chalk.yellow('PATHS:'))
+      for (let p of items) {
+        console.log(p);
+      }
+    } else {
+      console.group(chalk.yellow('(NO PATHS STORED)'))  
+    }
+    
     
     console.log();
 
@@ -83,5 +99,16 @@ function deletePath(p) {
   store.set('paths', paths);
 
   console.log(chalk.yellow('Path deleted:'), p);
+  process.exit();
+}
+
+
+function clearAllPaths() {
+  
+  debugger
+
+  store.set('paths', []);
+
+  console.log(chalk.yellow('All paths cleared'));
   process.exit();
 }

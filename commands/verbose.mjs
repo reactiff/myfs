@@ -3,12 +3,21 @@ import chalk from "chalk";
 
 export async function execute(args, argv, resolve) {
   try {
-    const verbose = !(args[0] || store.get("verbose") === true);
+
+    const param = args[0];
+    const stored = Boolean(store.get("verbose"));
+
+    // console.log('param', param);
+    // console.log('stored', stored);
+
+    const value = param !== undefined && param !== null ? Boolean(param) : !stored;
+
+    // console.log('new value', value);
 
     // Do your thing!
-    store.set({ verbose });
+    store.set('verbose', value);
 
-    if (verbose) {
+    if (value) {
       console.log(chalk.cyan("verbose: true"));
     } else {
       console.log(chalk.gray("verbose: false"));

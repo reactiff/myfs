@@ -1,5 +1,5 @@
 {
-  "name": "myfs-cli",
+  "name": "fs-cli",
   "version": "1.0.0",
   "private": true,
   "description": "Command line app meta utility",
@@ -12,7 +12,7 @@
   "author": "Rick Ellis (https://riquire.com)",
   "license": "MIT",
   "bin": {
-    "myfs": "./bin/index.js"
+    "fs": "./bin/index.js"
   },
   "dependencies": {
     "ajv": "^8.7.1",
@@ -37,7 +37,7 @@
     "prompt": "^1.2.0",
     "pug": "^3.0.2",
     "readdir-glob": "^1.1.1",
-    "superagent": "^6.1.0",
+    "superagent": "^7.0.2",
     "trace": "^3.1.1",
     "uuid": "^8.3.2",
     "yargs": "^17.1.1"

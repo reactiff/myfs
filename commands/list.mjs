@@ -8,9 +8,9 @@ export const options = {
     description: 'Add item',
     type: 'string',
   },
-  'R': {
-    alias: 'remove',
-    description: 'Remove item',
+  'D': {
+    alias: 'delete',
+    description: 'Delete item',
     type: 'boolean',
   },
   'C': {
@@ -21,8 +21,8 @@ export const options = {
     alias: 'hist',
     type: 'boolean',
   },
-  'R': {
-    alias: 'revert',
+  'U': {
+    alias: 'undo',
     type: 'boolean',
   },
 
@@ -44,8 +44,8 @@ export async function execute(args, argv, resolve, fsitem) {
       store.add(name, argv.A||argv.add);
     }
 
-    if (argv.R||argv.remove) {
-      store.remove(name, argv.R||argv.remove);
+    if (argv.D||argv.delete) {
+      store.delete(name, argv.D||argv.delete);
     }
 
     if (argv.C||argv.clear) {

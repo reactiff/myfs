@@ -28,6 +28,7 @@ function createCommandModule({ m, name, fsitem }) {
   return {
     command: name,
     options: m.options,
+    help: m.help,
     handler: (argv) => {
       return new Promise(resolve => {
         try {

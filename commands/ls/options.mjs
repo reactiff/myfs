@@ -2,7 +2,7 @@ export const options = {
   O: {
     alias: "order",
     description:
-      "Sort by name|size|atime|mtime|ctime|btime|(filea, fileb) => a - b // where file: { path, name, ext, stat, content } ",
+      "Sort by name|size|atime|mtime|ctime|btime",
     type: "string",
     default: "mtime",
   },
@@ -25,7 +25,7 @@ export const options = {
   },
   R: {
     alias: "recursive",
-    description: "Recursively search all subdirectories",
+    description: "search all sub-dirs. Default TRUE.",
     type: "boolean",
     default: true,
   },
@@ -45,4 +45,5 @@ export const options = {
     type: "boolean",
     default: false,
   },
+
 };

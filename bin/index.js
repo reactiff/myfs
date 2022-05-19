@@ -9,6 +9,7 @@ import toDictionary from "../utils/toDictionary.mjs";
 import inspectErrorStack from "../utils/inspectErrorStack.mjs";
 ////////////////////////
 import { fileURLToPath } from "url";
+import remap from "utils/remap.mjs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootCommandsPath = path.resolve(__dirname, "../commands");
@@ -30,10 +31,27 @@ if (!Reflect.has(menu, cmd)) {
   process.exit();
 }
 
+
 commandLoader
   .load(menu[cmd])
-  .then((modules) => {
-    yargs(args).command(modules).argv;
+  .then((module) => {
+
+    // extract help map from option dictionary as:
+    //   [option.alias]: option.description
+
+    const helpMap = remap(module.options, {
+      key: (v, k) => {
+        return v.alias;
+      },
+      value: (v, k) => {
+        return v.description;
+      }
+    });
+
+    yargs(args)
+      .command(module)
+      .describe(helpMap)
+      .argv;
   })
   .catch((err) => {
     inspectErrorStack(err);
