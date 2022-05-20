@@ -56,5 +56,5 @@ export function getSearchResultSorter(order) {
   const key = order;
   if (Reflect.has(searchResultSort, key)) return searchResultSort[key];
   return eval(key);
-  return searchResultSort.default;
+  // return searchResultSort.default;
 }

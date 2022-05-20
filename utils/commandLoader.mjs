@@ -1,9 +1,13 @@
 import fs from "fs";
 import path from "path";
+import { parseCommandContext, printCommandHelp, printHelp } from "./commandContext.mjs";
 import inspectErrorStack from "./inspectErrorStack.mjs";
 import FSItem from "./myfs/fsItem.mjs";
 
 function list(abspath) {
+
+
+
   let dirItems = fs.readdirSync(abspath);
   let commands = [];
   for (let file of dirItems) {
@@ -24,16 +28,29 @@ function list(abspath) {
   return commands;
 }
 
-function createCommandModule({ m, name, fsitem }) {
+function createCommandModule({ context, m, name, fsitem }) {
   return {
     command: name,
+    type: m.type,
     options: m.options,
     help: m.help,
     handler: (argv) => {
       return new Promise(resolve => {
         try {
-          m.execute(argv._.slice(1), argv, resolve, fsitem)
-            .catch(inspectErrorStack);
+
+          if (context.commandName===context.tail && context.flags.help) {
+            // const newContext = parseCommandContext(context.depth + 1, context.args);
+            printCommandHelp(m, fsitem, context);
+            resolve();
+          }
+
+          m.execute(
+            argv._.slice(1), 
+            argv, 
+            resolve, 
+            fsitem, 
+            context,
+          ).catch(inspectErrorStack);
         } catch (err) {
           inspectErrorStack(err);
         }
@@ -51,14 +68,22 @@ function createFsItem(command) {
   });
 }
 
-function load(command) {
+function load(context) {
   return new Promise(resolve => {
-    import(command.pathFromRoot)
+    // it shoud work because of workspaces
+    import(context.command.pathFromRoot)
       .then(m => {
-        const fsitem = createFsItem(command);
-        resolve( createCommandModule({ m, name: fsitem.moduleName, fsitem }));
+        const fsitem = createFsItem(context.command);
+        resolve(createCommandModule({ 
+          context,
+          m, 
+          name: fsitem.moduleName, 
+          fsitem 
+        }));
       })
-      .catch(inspectErrorStack);
+      .catch(ex => {
+        inspectErrorStack(ex)
+      });
   });
 }
 

@@ -1,12 +1,13 @@
 import _ from "lodash";
 import chalk from "chalk";
 import path from "path";
-
 import interactive from "utils/interactive.mjs";
-import { createRequire } from "module";
 import boxen from "boxen";
 import columnify from "columnify";
+
+import { createRequire } from "module";
 const require = createRequire(import.meta.url);
+
 
 export function summaryTable(items, scope) {
   const { dir, palette } = scope;
@@ -22,7 +23,7 @@ export function summaryTable(items, scope) {
     return fileType;
   };
 
-  const countIf = (condition) => (!!condition ? 1 : 0);
+  const countIf = (condition) => (condition ? 1 : 0);
 
   // By folder
   const byFolder = items.reduce((map, item) => {

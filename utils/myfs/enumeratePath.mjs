@@ -4,17 +4,19 @@ import fs from 'fs';
 import fsItem from './fsItem.mjs';
 import minimatch from 'minimatch';
 
-const includePatterns = [];
-const includeGlobPatterns = [];
-for (let p of (store.get('include') || [])) {
-    const decoded = decodeURIComponent(p);
-    try {
-        const pattern = new RegExp(decoded, "")
-        includeRegexPatterns.push(pattern);
-    }
-    catch {}
-    includeGlobPatterns.push(decoded);
-}
+// const includeRegexPatterns = [];
+// const includeGlobPatterns = [];
+// for (let p of (store.get('include') || [])) {
+//     const decoded = decodeURIComponent(p);
+//     try {
+//         const pattern = new RegExp(decoded, "")
+//         includeRegexPatterns.push(pattern);
+//     }
+//     catch(ex) {
+//         console.error(ex.message);
+//     }
+//     includeGlobPatterns.push(decoded);
+// }
 
 const excludeRegexPatterns = [];
 const excludeGlobPatterns = [];
@@ -24,7 +26,9 @@ for (let p of (store.get('exclude') || [])) {
         const pattern = new RegExp(decoded, "");
         excludeRegexPatterns.push(pattern);
     }
-    catch {}
+    catch(ex) {
+        console.error(ex.message);
+    }
     excludeGlobPatterns.push(decoded);
 }
 

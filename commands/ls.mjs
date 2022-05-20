@@ -8,6 +8,7 @@ import webbify from "hyperspace/webbify.mjs";
 
 // EXPORTS
 export { options } from "./ls/options.mjs";
+export const help = `Manual help description`;
 
 function print(results, scope) {
   const { dir, opts } = scope;
@@ -17,9 +18,9 @@ function print(results, scope) {
   }
 }
 
-export async function execute(args, argv, resolve) {
+export async function execute(args, argv, resolve, fsItem, context) {
   try {
-   
+
     const opts = initOptions(args, argv);
     const { dir } = opts;
 

@@ -227,6 +227,6 @@ class myfs {
         return new fsItem(this.items[0]);
     }
 
-};
+}
 
 export default myfs;

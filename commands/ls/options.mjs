@@ -41,7 +41,7 @@ export const options = {
   },
   W: {
     alias: "webbify",
-    description: "Http serve to the web",
+    description: "Display results in ",
     type: "boolean",
     default: false,
   },

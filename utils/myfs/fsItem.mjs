@@ -94,7 +94,6 @@ export default class fsItem {
 
                     console.log( chalk.bgHex('#550000')(error.stack) );
                     search.terminate(false, error);
-                    search.matches = matches,    
                     _this.notify({ ok: false, error });
                 });
             },

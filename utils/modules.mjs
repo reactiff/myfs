@@ -8,9 +8,7 @@ import inspectErrorStack from "./inspectErrorStack.mjs";
 export default function loadModules(srcpath) {
   return new Promise((resolve, reject) => {
 
-    debugger
-
-    const isRelative = /^[\.\/]/.test(srcpath);
+    const isRelative = /^[\\.\\/]/.test(srcpath);
 
     const dir = isRelative
       ? path.join(path.resolve(process.cwd()), srcpath)
@@ -45,11 +43,9 @@ export default function loadModules(srcpath) {
             command: name,
             options: m.options,
             handler: (argv) => {
-              return new Promise(async (resolve, reject) => {
+              return new Promise((resolve, reject) => {
                 m.execute(argv._.slice(1), argv, resolve, fsitem)
-                  .catch((ex) => {
-                    console.log(chalk.redBright(ex.message));
-                  });
+                  .catch((ex) => console.log(chalk.redBright(ex.message)));
               });
             },
           };

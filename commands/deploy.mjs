@@ -5,13 +5,23 @@ import myfs from "utils/myfs.mjs";
 import fs from "fs";
 import minimatch from "minimatch";
 import chalk from "chalk";
-import { NodeSSH } from "node-ssh";
+
 import prompt from "prompt";
 import store from "utils/store.mjs";
 import { parseOptions } from "utils/parseOptions.mjs";
 import { assert } from "utils/assert.mjs";
-import { config } from "./deploy.config.mjs";
+import { config } from "./deploy/config.mjs";
 import { execSync } from "child_process";
+
+debugger
+
+// import { createRequire } from "module";
+// const require = createRequire(import.meta.url);
+// const { NodeSSH } = require("node-ssh");
+
+class NodeSSHMock {}
+
+var NodeSSH = NodeSSHMock; // will be lazy loaded if it is nedded
 
 const cwd = path.resolve(process.cwd());
 const manifestoFile = config.manifestoFile;
@@ -32,14 +42,17 @@ export const options = {
   B: {
     alias: "build",
     description: "Upload the manifesto to cause a rebuild",
+    type: "boolean",
   },
   H: {
     alias: "host",
     description: "Remote host",
+    type: "string",
   },
   PWD: {
     alias: "pwd",
     description: "SSH root password",
+    type: "string",
   },
   P: {
     alias: "port",
@@ -236,8 +249,27 @@ function getSSHCommandList(d) {
 }
 
 export async function execute(args, argv, resolve) {
-  try {
 
+  import('node-ssh')
+  .then(m => {
+    debugger
+    NodeSSH = m.NodeSSH;
+    safeExecute(args, argv, resolve);
+  })
+  .catch(ex => {
+    console.log(chalk.bgRed.white('NodeSSH is not available in this environment or build'));
+  });
+}
+
+
+/**
+ * safeExecute is called by execute IF node-ssh module resolves.
+ * @param {*} args 
+ * @param {*} argv 
+ * @param {*} resolve 
+ */
+export async function safeExecute(args, argv, resolve) {
+  try {
     
     parseOptions(argv, options);
 
