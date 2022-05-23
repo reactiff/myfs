@@ -1,15 +1,16 @@
 {
   "name": "fs-cli",
+  "alias": "FS",
   "version": "1.0.0",
   "private": true,
-  "description": "Command line app meta utility",
+  "description": "File System CLI",
   "type": "module",
   "main": "bin/index.js",
   "scripts": {
     "lint": "eslint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Rick Ellis (https://riquire.com)",
+  "author": "Rick Ellis",
   "license": "MIT",
   "bin": {
     "fs": "./bin/index.js"

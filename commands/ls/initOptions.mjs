@@ -14,12 +14,12 @@ export function initOptions(args, argv) {
   
   const opts = {
     order: argv.order || argv.O || options.O.default,
-    global: argv.global || argv.G || options.G.default,
-    recursive: argv.recursive || argv.R || options.R.default,
+    // global: argv.global || argv.G || options.G.default,
+    // recursive: argv.recursive || argv.R || options.R.default,
     pattern: argv.pattern || argv.P,
     search: argv.search || argv.S,
     dirs: argv.dirs || argv.D,
-    files: argv.files || argv.F,
+    // files: argv.files || argv.F,
   };
 
   opts.webbify = argv.web || argv.W || options.W.default;

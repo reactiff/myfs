@@ -25,9 +25,11 @@ export const options = {
     alias: 'undo',
     type: 'boolean',
   },
-
-  
 };
+
+// COMMAND MODULE PROPS
+export const help = `Working with lists`;
+export const group = 'List Management';
 
 export async function execute(args, argv, resolve, fsitem) {
 

@@ -1,3 +1,4 @@
+
 export default function parseArgs(args, argv, options) {
 
     if (args.length === 0 && options.length > 0) {
@@ -8,10 +9,9 @@ export default function parseArgs(args, argv, options) {
         const arg = args[i];
         const opt = options[i];
         if (Array.isArray(opt) && !(opt.includes(arg) || opt.some(o => o === '*') )) {
-            const [ firstOpt, ...rest ] = options;
+            const [ firstOpt, ...rest ] = opt;
             
-            throw new Error(`ahem... I wasn't expecting to see '${arg}' here, more like ${firstOpt} or ` + 
-                (rest.length ? rest.join(' or ') : 'something'));
+            throw new Error(`ahem... I wasn't expecting to see '${arg}' here, more like ${firstOpt} or ` + (rest.length ? rest.join(' or ') : 'something'));
         }
         if (typeof opt !== 'object') {
             if (opt === '*') continue;

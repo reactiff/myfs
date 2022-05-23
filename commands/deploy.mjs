@@ -5,19 +5,16 @@ import myfs from "utils/myfs.mjs";
 import fs from "fs";
 import minimatch from "minimatch";
 import chalk from "chalk";
-
-import prompt from "prompt";
 import store from "utils/store.mjs";
 import { parseOptions } from "utils/parseOptions.mjs";
 import { assert } from "utils/assert.mjs";
 import { config } from "./deploy/config.mjs";
 import { execSync } from "child_process";
+import { promptInput } from "utils/promptInput.mjs";
 
-debugger
-
-// import { createRequire } from "module";
-// const require = createRequire(import.meta.url);
-// const { NodeSSH } = require("node-ssh");
+// COMMAND MODULE PROPS
+export const help = `Manual help description`;
+export const group = 'Web Apps';
 
 class NodeSSHMock {}
 
@@ -25,18 +22,6 @@ var NodeSSH = NodeSSHMock; // will be lazy loaded if it is nedded
 
 const cwd = path.resolve(process.cwd());
 const manifestoFile = config.manifestoFile;
-
-function getInput(promptText) {
-  return new Promise((resolve, reject) => {
-    prompt.start();
-    prompt.get(
-      [{ name: "input", description: promptText }],
-      function (err, result) {
-        resolve(result.input);
-      }
-    );
-  });
-}
 
 export const options = {
   B: {
@@ -346,7 +331,7 @@ export async function safeExecute(args, argv, resolve) {
     console.log("\n");
     console.groupEnd();
 
-    getInput("Proceed with deployment? [y/n]").then((input) => {
+    promptInput("Proceed with deployment? [y/n]").then((input) => {
       if (input === "y") {
         run(commands).then(() => {
           process.exit(1);

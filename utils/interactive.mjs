@@ -1,9 +1,5 @@
-import userInput from "./userInput.mjs";
-
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-
-
 
 const chalk = require("chalk");
 const boxen = require("boxen");
@@ -20,7 +16,7 @@ function getUserSelection(prompts) {
   });
 }
 
-function menu(dict) {
+export function menu(dict) {
   return new Promise(async (resolve, reject) => {
 
     let selection;
@@ -92,11 +88,3 @@ function menu(dict) {
   });
 }
 
-function input(...prompts) {
-  userInput(...prompts);
-}
-
-export default {
-  menu,
-  input,
-};

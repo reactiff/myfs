@@ -1,6 +1,10 @@
 import store from "utils/store.mjs";
 import _ from 'lodash';
 
+// COMMAND MODULE PROPS
+export const help = `Get value by key`;
+export const group = 'Settings';
+
 export async function execute(args, argv, resolve, fsitem) {
   try {
 

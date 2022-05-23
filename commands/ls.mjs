@@ -6,9 +6,10 @@ import { initOptions } from "./ls/initOptions.mjs";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
 import webbify from "hyperspace/webbify.mjs";
 
-// EXPORTS
+// COMMAND MODULE PROPS
 export { options } from "./ls/options.mjs";
-export const help = `Manual help description`;
+export const help = `Search and manage files across directories`;
+export const group = 'File System';
 
 function print(results, scope) {
   const { dir, opts } = scope;
@@ -61,15 +62,19 @@ export async function execute(args, argv, resolve, fsItem, context) {
       .map(i => ({ ...{ title: i.name }, ...i.stat }));
     
     webbify(schema)
-      .then(p => 
+      .then(p => {
+        
         p.render({ 
           target: "main", 
           template: "item", 
           data 
-        }));
+        });
+
+        resolve();
+      });
               
 
-    resolve();
+    
   } catch (ex) {
     inspectErrorStack(ex);
   }

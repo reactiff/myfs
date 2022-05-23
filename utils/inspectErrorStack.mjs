@@ -1,31 +1,12 @@
-// import _ from "lodash";
 import chalk from "chalk";
 import path from "path";
-// import boxen from "boxen";
-
-////////////////////////
-// import { fileURLToPath } from 'url';
-import getPackagePath from "./getPackagePath.mjs";
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-////////////////////////
-
 import minimatch from "minimatch";
-
+import { getLocalPackagePath } from 'utils/getLocalPackagePath.mjs'
 
 function printSchemaValidationErrors(error) {
     debugger;
-  
-    // const error = new Error('HyperApp schema validation errors');
-  
-    // error.schema = appSchema;
-    // error.type = 'schemaValidation';
-    // error.list = validateSchema.errors;
-    // throw error;
-  
+      
     console.log(chalk.bgHex("#880000").bold.whiteBright(error.message));
-  
-    // const schemaKeys = Object.keys(appSchema);
   
     error.list.forEach((err, index) => {
       console.log(
@@ -69,7 +50,7 @@ function inspectErrorStack(error) {
     printSchemaValidationErrors(error);
   }
 
-  const rootPath = getPackagePath();
+  const rootPath = getLocalPackagePath();
 
   // console.clear();
 

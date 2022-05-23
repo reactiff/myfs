@@ -1,7 +1,9 @@
-import store from "utils/store.mjs";
-import parseArgs from "utils/validation.mjs";
-import _ from 'lodash';
 import delegate from 'utils/delegate.mjs';
+import store from "utils/store.mjs";
+
+// COMMAND MODULE PROPS
+export const help = `Store value by key`;
+export const group = 'Settings';
 
 export async function execute(args, argv, resolve, scope) {
   try {

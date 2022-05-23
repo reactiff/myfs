@@ -1,8 +1,6 @@
 import _ from "lodash";
 import chalk from "chalk";
 import path from "path";
-import interactive from "utils/interactive.mjs";
-import boxen from "boxen";
 import columnify from "columnify";
 
 import { createRequire } from "module";

@@ -1,13 +1,14 @@
 import chalk from "chalk";
 import columnify from "columnify";
-import path from "path";
+import path, { resolve } from "path";
 import { fileURLToPath } from "url";
 import commandLoader from "./commandLoader.mjs";
 import remap from "./remap.mjs";
 import toDictionary from "./toDictionary.mjs";
+import _ from "lodash";
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+import { getLocalPackage } from 'utils/getLocalPackage.mjs'
+import boxen from "boxen";
 
 export function getContextPath(context, chain) {
     const partialTokens = chain.slice(0, context.depth);
@@ -21,110 +22,132 @@ export function getContextPath(context, chain) {
 
 export function loadContextCommands(context, chain) {
     const pathToContext = getContextPath(context, chain)
-    const items = commandLoader.list(pathToContext);
+    const items = commandLoader.getFiles(pathToContext);
     const commands = toDictionary(items, (cmd) => cmd.name);
     return commands;
 }
 
-export function printCommandHelp(module, fsItem) {
-    
-    console.log(chalk.rgb(255,128,0)(fsItem.name + ' help:')); 
-
-    if (module.help) {
-        console.log(module.help);
-    }
+export function printCommandHelp(module, fsItem, context) {
 
     console.log();
 
-    if (module.options) {
+    console.group();
 
+    const rawTitle = fsItem.name + ' HELP';
+    console.log(chalk.rgb(255,128,0)(fsItem.name.toUpperCase()), 'HELP');
+    console.log(chalk.gray('-'.repeat(rawTitle.length)));
+    
+    // show module description
+    console.log(module.help);
+
+    console.log();
+    
+    console.log(boxen(chalk.bold.white('> fs ' + (context.args.join(' ') + ' ' + chalk.bgHex('#000')(' ... ') + ' '))));
+
+    console.log();
+
+    console.group();
+    if (module.options) {
         const data = Object.values(
             remap(module.options, {
-                value: (v, k) => ({ ...v, key: `-${k}`, alias: `--${v.alias}` })
+                value: (v, k) => ({ 
+                    ...v, 
+                    alias: chalk.white(`--${v.alias}` + ' ' + v.alias ),
+                    default: v.default !== undefined ? chalk.hex('#55ddff')(v.default) : '',
+                    type: chalk.green(v.type),
+                    description: chalk.gray(v.description)
+                })
             })
         );
-
-        console.log(columnify(data));
-
-        // // calculate longest alias
-        // const aliases = Object.values(module.options)
-        //     .map(o => {
-        //         const d = o.default;
-        //         const defaultStr = (d !== undefined ? '=' + d.toString() : '');
-        //         return '--' + o.alias + defaultStr;
-        //     });
-
-        // debugger
-        // const longestAlias = aliases.reduce((a, s) => Math.max(a, s.length), 0);
-        
-        // for (let k of Object.keys(module.options)) {
-
-        //     const o = module.options[k];
-
-        //     const description = o.description;
-        //     const type = o.type;
-        //     const defaultValue = o.default;
-            
-        //     const defaultStr = o.default !== undefined 
-        //         ? '=' + o.default.toString()
-        //         : '';
-            
-        //     const longForm = [
-        //         ('-' + k).padEnd(4),
-        //         ('--' + o.alias + defaultStr).padEnd(longestAlias + 1), 
-        //     ].join('');
-
-        //     console.log( 
-        //         '',
-        //         longForm,
-        //         type,
-        //         defaultValue,
-        //         description,
-        //     ) 
-            
-        // }    
+        console.log(columnify(data, { columns: [ 'alias', 'type', 'default', 'description' ], showHeaders: false }));
     }
-
+    console.groupEnd();
     
-
     console.log();
+
+    console.groupEnd();
     process.exit();
 }
 
 export function printHelp(context) {
         
-    console.log(chalk.rgb(255,128,0)('Available commands:')); 
+    console.log();
+
+    console.group();
+
+    const pkg = getLocalPackage();
+
+    const rawTitle = pkg.name.toUpperCase();
+    console.log(rawTitle + ' - ' + chalk.grey(pkg.author + ', ' + pkg.license + ', ' + 'v' + pkg.version));
+
+    const combinedTitle = rawTitle + ' - ' + pkg.author + ', ' + pkg.license + ', ' + 'v' + pkg.version;
+    console.log(chalk.gray('-'.repeat(combinedTitle.length)));
+        
+    console.log();
+
+    // show module description
+    console.log(pkg.description);
+
+    console.log();
+
+    console.log('> fs ... ');
+
+    console.log();
+
+    console.group();
 
     Promise.all(
         Object.values(context.commands)
             .map(c => {
-                return commandLoader.load(c)
+                return commandLoader.load(c, context)
             })
     ).then(modules => {
-    
-        for (let m of modules) {
-            console.log( 
-            chalk.gray(' fs'), 
-            chalk.yellow(m.command.padEnd(10, ' ')), 
-            ...Object.values(m.options||{}).map(o => {
-                return [
-                '--', 
-                o.alias, 
-                ...[o.default !== undefined ? chalk.hex('#8888aa')('=') + chalk.hex('#55ddff')(o.default.toString()) : null]
-                ].join('');
-            }) 
-            );
-        }
 
-        console.log();
-        process.exit();
+        const groupOrder = { 
+            'File System': 0,
+            'List Management': 1,
+            'Notes': 2,
+            'Web Apps': 3,
+            'Settings': 999
+        };
+
+        const groupSet = new Set(modules.map(m => m.group));
+        const groups = _.sortBy(
+            Array.from(groupSet), 
+            [ g => groupOrder[g] || 1 ]
+        );
+
+        for (let g of groups) {
+            
+            const groupTitle = g||"ungrouped";
+            console.log( chalk.underline.gray(groupTitle)) ;
+            // console.log('-'.repeat(groupTitle.length));
+            console.log();
+
+            console.group();
+
+            const data = modules
+                .filter(m => m.group === g)
+                .map(m => ({
+                    command: '\t' + chalk.yellow(m.command.padEnd(10, ' ')), 
+                    options: Object.values(m.options||{}).map(o => {
+                        return [
+                        '--', 
+                        o.alias, 
+                        ...[o.default !== undefined ? ' ' + chalk.hex('#55ddff')(o.default.toString()) : null]
+                        ].join('');
+                    }).join(' ')
+                }));
+            
+            console.log(columnify(data, { showHeaders: false }));
+            console.groupEnd();
+            console.log();
+        }
+        
+        console.groupEnd();
 
     })
     .catch((reason) => {
-
-
-        debugger
-
         console.error(reason.message || reason)
     })
 
@@ -143,7 +166,7 @@ export function parseCommandContext(depth, chain) {
       command: undefined,
       tail: undefined,
       loadModule() {
-        return commandLoader.load(context);
+        return commandLoader.load(context.command, context);
       }
     };
 

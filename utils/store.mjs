@@ -2,7 +2,6 @@ import Configstore from "configstore";
 import chalk from "chalk";
 import moment from "moment";
 
-
 const store = new Configstore("fs", {});
 
 function _pushHist(k) {

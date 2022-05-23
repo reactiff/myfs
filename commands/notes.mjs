@@ -2,6 +2,10 @@ import parseArgs from "utils/validation.mjs";
 import _ from 'lodash';
 import delegate from 'utils/delegate.mjs';
 
+// COMMAND MODULE PROPS
+export const help = `Manage Notes`;
+export const group = 'Notes';
+
 export async function execute(args, argv, resolve, scope) {
   try {
     parseArgs(args, argv, [

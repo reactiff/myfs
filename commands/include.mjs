@@ -26,6 +26,10 @@ export const options = {
   },
 };
 
+// COMMAND MODULE PROPS
+export const help = `Manage included file patterns (globs)`;
+export const group = 'Settings';
+
 export async function execute(args, argv, resolve, fsitem) {
 
   try {
@@ -59,39 +63,3 @@ export async function execute(args, argv, resolve, fsitem) {
     throw new Error(ex.message);
   }
 }
-
-// function add(item) {
-  
-//   const encoded =  encodeURIComponent(item.replace(/\\\\/g, '\\'));
-  
-//   const items = store.get('include') || [];
-//   if (items.includes(encoded)) {
-//     console.log(chalk.yellow('Pattern already exists:'), item);
-//     process.exit();  
-//   }
-
-//   items.push(encoded);
-//   store.set('include', items);
-
-//   console.log(chalk.yellow('Pattern added:'), item);
-//   process.exit();
-// }
-
-
-// function del(item) {
-  
-//   const encoded =  encodeURIComponent(item.replace(/\\\\/g, '\\'));
-
-//   const items = store.get('include') || [];
-//   if (!items.includes(encoded)) {
-//     console.error(chalk.red('Pattern not registered: '), item);
-//     process.exit();
-//   }
-
-//   const index = items.findIndex(x => x === encoded);
-//   items.splice(index, 1);
-//   store.set('include', items);
-
-//   console.log(chalk.yellow('Pattern deleted:'), item);
-//   process.exit();
-// }

@@ -24,11 +24,6 @@ const chain = hideBin(process.argv);
 
 // command context
 const context = parseCommandContext(0, chain);
-// if (!context.command) {
-//   console.log(chalk.bgRed.white('Missing a command'));
-//   process.exit();
-// }
-
 
 // --help
 if (context.flags.help && context.args.length===0 || !context.command) {

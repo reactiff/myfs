@@ -4,7 +4,7 @@ import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
 
-function getLocalPackage() {
+export function getLocalPackage() {
     const cwd = path.resolve(process.cwd());
     const tokens = cwd.split('\\');
     let pkg;
@@ -14,11 +14,11 @@ function getLocalPackage() {
         const filePath = dir.join('\\') + '\\' + 'package.json';
         if (fs.existsSync(filePath)) {
             pkg = require(filePath);
-            break;
+            if (Reflect.has(pkg, 'workspaces')) {
+                break;
+            }
         }
     }
     if (!pkg || !pkg.name) throw new Error('package.json not found');
     return pkg;
 }
-
-export default getLocalPackage;
