@@ -1,4 +1,4 @@
-import store from '../store.mjs';
+import store from '../store/index.mjs';
 import path from 'path';
 import fs from 'fs';
 import fsItem from './fsItem.mjs';

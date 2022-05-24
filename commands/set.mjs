@@ -8,6 +8,7 @@ export const group = 'Settings';
 export async function execute(args, argv, resolve, scope) {
   try {
 
+    // Handle sub-commands
     if (delegate(args, argv, resolve, scope)) {
       return; 
     }

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import path from "path";
@@ -30,23 +29,20 @@ if (context.flags.help && context.args.length===0 || !context.command) {
   printHelp(context);
 }
 else {
-
   // bootstrap command module
   context.loadModule()
-    .then((module) => {
-
-      yargs(context.args)
-        .command(module)
-        .describe(remap(module.options, { 
-          key: v => v.alias, 
-          value: v => v.description 
-        }))
-        .argv;
-
-    })
-    .catch((err) => {
-      inspectErrorStack(err);
-    });
+  .then((module) => {
+    yargs(context.args)
+      .command(module)
+      .describe(remap(module.options, { 
+        key: v => v.alias, 
+        value: v => v.description 
+      }))
+      .argv;
+  })
+  .catch((err) => {
+    inspectErrorStack(err);
+  });
 }
 
 

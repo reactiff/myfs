@@ -4,64 +4,6 @@ import { parseCommandContext, printCommandHelp, printHelp } from "./commandConte
 import inspectErrorStack from "./inspectErrorStack.mjs";
 import FSItem from "./myfs/fsItem.mjs";
 
-function handleCommand({context, m, name, fsitem}) {
-  return (argv) => {
-    return new Promise(resolve => {
-      try {
-
-        // if --help is for this command
-        if (context.commandName===context.tail && context.flags.help) {
-          printCommandHelp(m, fsitem, context);
-          resolve();
-        }
-
-        m.execute(
-          argv._.slice(1), 
-          argv, 
-          resolve, 
-          fsitem, 
-          context,
-        ).catch(inspectErrorStack);
-
-      } catch (err) {
-        inspectErrorStack(err);
-      }
-    });
-  }
-}
-
-function createCommandModule({ context, m, name, fsitem }) {
-  return {
-    command: name,
-    type: m.type,
-    options: m.options,
-    help: m.help,
-    group: m.group,
-    handler: handleCommand({ context, m, name, fsitem }),
-  };
-}
-
-function createFsItem(command) {
-  return new FSItem({
-    path: command.path,
-    name: command.name,
-    moduleName: command.filename.replace(/\.mjs$/, ""),
-    fullPath: command.fullPath,
-  });
-}
-
-
-function loadAll(abspath) {
-  return new Promise((resolve, reject) => {
-    Promise.all( getFiles(abspath).map((c) => load(c)) )
-    .then(resolve)
-    .catch((err) => {
-      inspectErrorStack(err);
-      reject(err.message || err);
-    });
-  });
-}
-
 function load(command, context) {
   return new Promise(resolve => {
     // it shoud work because of workspaces
@@ -80,6 +22,61 @@ function load(command, context) {
       .catch(ex => {
         inspectErrorStack(ex)
       });
+  });
+}
+
+function createFsItem(command) {
+  return new FSItem({
+    path: command.path,
+    name: command.name,
+    moduleName: command.filename.replace(/\.mjs$/, ""),
+    fullPath: command.fullPath,
+  });
+}
+
+function createCommandModule({ context, m, name, fsitem }) {
+  return {
+    command: name,
+    type: m.type,
+    options: m.options,
+    help: m.help,
+    group: m.group,
+    handler: handleCommand({ context, m, name, fsitem }),
+  };
+}
+
+function handleCommand({context, m, name, fsitem}) {
+  return (argv) => {
+    return new Promise(resolve => {
+      try {
+
+        // if --help is for this command
+        if (context.commandName===context.tail && context.flags.help) {
+          printCommandHelp(m, fsitem, context);
+          resolve();
+        }
+
+        m.execute(argv._.slice(1), argv, resolve, fsitem, context).catch(
+          inspectErrorStack
+        );
+
+      } catch (err) {
+        inspectErrorStack(err);
+      }
+    });
+  }
+}
+
+// MULTIPLE MODULES
+
+function loadAll(abspath) {
+  return new Promise((resolve, reject) => {
+    Promise.all( getFiles(abspath).map((c) => load(c)) )
+    .then(resolve)
+    .catch((err) => {
+      inspectErrorStack(err);
+      reject(err.message || err);
+    });
   });
 }
 
