@@ -3,8 +3,8 @@ import _ from 'lodash';
 import path from 'path';
 import chalk from 'chalk'
 import fs from 'fs';
-import { parseOptions } from "utils/parseOptions";
-import { PathListStorage } from "utils/store/list";
+import { parseOptions } from "utils/parseOptions.mjs";
+import { PathListStorage } from "utils/store/list.mjs";
 
 export const options = {
   'A': {
@@ -32,8 +32,10 @@ export const options = {
 export const help = `Manage working paths`;
 export const group = 'Settings';
 
-export async function execute(args, argv, resolve, fsitem) {
+export async function execute(args, argv, resolve, fsitem, context) {
   try {
+    
+    debugger
     
     parseOptions(argv, options);
 

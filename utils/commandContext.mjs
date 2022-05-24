@@ -27,6 +27,13 @@ export function loadContextCommands(context, chain) {
     return commands;
 }
 
+export function loadContextCommand(context) {
+    const pathToContext = getContextPath(context, context.args)
+    const items = commandLoader.getFiles(pathToContext);
+    const commands = toDictionary(items, (cmd) => cmd.name);
+    return commands;
+}
+
 export function printCommandHelp(module, fsItem, context) {
 
     console.log();
@@ -154,8 +161,8 @@ export function printHelp(context) {
 }
 
 const _validFlags = [ '--help', '--status' ];
-export function parseCommandContext(depth, chain) {
-
+export function parseCommandContext(parentContext, depth, args) {
+    
     const context = {
       depth,
       flagCount: 0,
@@ -165,10 +172,17 @@ export function parseCommandContext(depth, chain) {
       commands: {},
       command: undefined,
       tail: undefined,
-      loadModule() {
-        return commandLoader.load(context.command, context);
-      }
     };
+
+    if (parentContext) {
+        context.depth = parentContext.depth + 1;
+        context.args = parentContext.args;
+    }
+    
+    context.loadModule = () => { 
+        return commandLoader.load(context.command, context);
+    }
+     
 
     // command/flag partitioner
     const processFlag = (token) => {
@@ -185,23 +199,27 @@ export function parseCommandContext(depth, chain) {
     }
 
     // main token iterator
-    for (let token of chain) {
-        if (processFlag(token)) continue;
-        context.args.push(token);
+    if (!parentContext) {
+        for (let token of args) {
+            if (processFlag(token)) continue;
+            context.args.push(token);
+        }
     }
-
+    
     // get the tail (last command)
     context.tail =  context.args.length > 0 
         ? context.args[context.args.length - 1] 
         : undefined;
 
-    // load available commands for the context
-    context.commands = loadContextCommands(context, chain)
-    
-    if (chain.length > depth) {
+    if (context.args.length > context.depth) {
         // get the command
-        context.commandName = chain[depth];
+        context.commandName = context.args[depth];
         context.command = context.commands[context.commandName];
+    }
+    
+    // load available commands for the context
+    if (context.commandName===context.tail && context.flags.help) {
+        context.commands = loadContextCommands(context, context.args)
     }
     
     return context;

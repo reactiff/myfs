@@ -3,6 +3,39 @@ import path from "path";
 import { parseCommandContext, printCommandHelp, printHelp } from "./commandContext.mjs";
 import inspectErrorStack from "./inspectErrorStack.mjs";
 import FSItem from "./myfs/fsItem.mjs";
+import yargs from "yargs";
+import remap from "./remap.mjs";
+
+/**
+ * Replacement for delegate()
+ */
+export function nextCommand(currentContext, depth, args) {
+  return new Promise((resolve, reject) => {
+
+    // parse context
+    const context = parseCommandContext(currentContext, depth, args);
+
+    // is there a command?
+    if (!context.command) {
+      return resolve(false);
+    }
+   
+    // bootstrap command module
+    context.loadModule()
+      .then(m => {
+        yargs(context.args)
+          .command(m)
+          .describe(remap(m.options, { 
+            key: v => v.alias, 
+            value: v => v.description 
+          }))
+          .argv;
+      })
+      .catch((err) => {
+        inspectErrorStack(err);
+      });
+  })
+}
 
 function load(command, context) {
   return new Promise(resolve => {
@@ -38,9 +71,11 @@ function createCommandModule({ context, m, name, fsitem }) {
   return {
     command: name,
     type: m.type,
-    options: m.options,
+    options: m.options || {},
     help: m.help,
     group: m.group,
+
+    // yargs calls handler
     handler: handleCommand({ context, m, name, fsitem }),
   };
 }
@@ -82,6 +117,28 @@ function loadAll(abspath) {
 
 
 function getFiles(abspath) {
+  let dirItems = fs.readdirSync(abspath);
+  let commands = [];
+  for (let file of dirItems) {
+    if (file.endsWith(".mjs")) {
+      const fullPath = path.join(abspath, file);
+      commands.push({
+        name: file.slice(0, file.length - ".mjs".length),
+        filename: file,
+        path: abspath,
+        fullPath,
+        // eslint-disable-next-line no-undef
+        pathFromRoot: fullPath
+          .replace(global.__basedir + "\\", "")
+          .replace("\\", "/"),
+      });
+    }
+  }
+  return commands;
+}
+
+
+function getFile(abspath) {
   let dirItems = fs.readdirSync(abspath);
   let commands = [];
   for (let file of dirItems) {

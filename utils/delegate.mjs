@@ -5,6 +5,10 @@ import path from 'path';
 import inspectErrorStack from 'utils/inspectErrorStack.mjs';
 
 // try to find a submodule that matches the next arg and let it handle the rest
+
+/**
+  * @deprecated Use nextCommand() instead
+ */
 export default function delegate(args, argv, resolve, fsItem, context) {
     if (args.length < 1) { return false; }
     
