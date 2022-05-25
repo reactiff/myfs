@@ -3,14 +3,14 @@ import { hideBin } from "yargs/helpers";
 import path from "path";
 import chalk from "chalk";
 import { fileURLToPath } from "url";
-////////////////////////////////////
-import { nextCommand } from "../utils/commandLoader.mjs";
 import _ from "lodash";
+////////////////////////////////////
+import { nextCommand } from "utils/nextCommand.mjs";
 import { parseCommandContext } from "utils/commandContext.mjs";
-import { printHelp } from "utils/commandContext.mjs";
+import { printHelp } from "utils/help.mjs";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
 
-///////////////////////////////////////////////////////////////
+/////////////////// bin/index ////////////////////
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

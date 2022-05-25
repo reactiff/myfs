@@ -7,8 +7,8 @@ export const options = {
     description: 'Add pattern',
     type: 'boolean',
   },
-  'R': {
-    alias: 'remove',
+  'D': {
+    alias: 'delete',
     description: 'Remove pattern',
     type: 'boolean',
   },

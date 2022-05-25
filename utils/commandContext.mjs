@@ -1,188 +1,89 @@
 import chalk from "chalk";
-import columnify from "columnify";
-import path, { resolve } from "path";
-import { fileURLToPath } from "url";
+import fs from 'fs';
+import path from "path";
 import commandLoader from "./commandLoader.mjs";
-import remap from "./remap.mjs";
 import toDictionary from "./toDictionary.mjs";
-import _ from "lodash";
 
-import { getLocalPackage } from 'utils/getLocalPackage.mjs'
-import boxen from "boxen";
+// export function getPath(context, chain) {
+//     const partialTokens = chain.slice(0, context.depth);
+//     const relativePath = path.join(['commands', ...partialTokens ]);
+//     const _path = path.resolve(
+//         global.__basedir, 
+//         relativePath
+//     );
+//     return _path;
+// }   
 
-export function getContextPath(context, chain) {
-    const partialTokens = chain.slice(0, context.depth);
-    const relativePath = [ 'commands', ...partialTokens ].join('/');
-    const _path = path.resolve(
-        global.__basedir, 
-        relativePath
-    );
-    return _path;
-}   
+function getCommandPaths(context) {
+    const parentCommand = context.parentCommand;
+    const parentPath = context.parentCommand 
+        ? parentCommand.path 
+        : 'commands'; 
+    
+    const pathFromParent = path.resolve(parentPath);
+    const sharedPath = path.resolve('commands/_shared');
 
-export function loadContextCommands(context, chain) {
-    const pathToContext = getContextPath(context, chain)
-    const items = commandLoader.getFiles(pathToContext);
-    const commands = toDictionary(items, (cmd) => cmd.name);
+    return [
+        pathFromParent,
+        sharedPath,
+    ]
+}
+
+export function loadAvailableCommands(context) {
+
+    debugger
+
+    const paths = getCommandPaths(context);
+    const allFiles = paths.reduce(
+        (files, p) => files.concat(...commandLoader.getFiles(p))
+    , []);
+
+    const commands = toDictionary(allFiles, (cmd) => cmd.name);
     return commands;
 }
 
-export function loadContextCommand(context) {
-    const pathToContext = getContextPath(context, context.args)
-    const items = commandLoader.getFiles(pathToContext);
-    const commands = toDictionary(items, (cmd) => cmd.name);
-    return commands;
-}
+export function loadCommand(context) {
 
-export function printCommandHelp(module, fsItem, context) {
-
-    console.log();
-
-    console.group();
-
-    const rawTitle = fsItem.name + ' HELP';
-    console.log(chalk.rgb(255,128,0)(fsItem.name.toUpperCase()), 'HELP');
-    console.log(chalk.gray('-'.repeat(rawTitle.length)));
+    debugger
     
-    // show module description
-    console.log(module.help);
+    const paths = getCommandPaths(context);
 
-    console.log();
-    
-    console.log(boxen(chalk.bold.white('> fs ' + (context.args.join(' ') + ' ' + chalk.bgHex('#000')(' ... ') + ' '))));
-
-    console.log();
-
-    console.group();
-    if (module.options) {
-        const data = Object.values(
-            remap(module.options, {
-                value: (v, k) => ({ 
-                    ...v, 
-                    alias: chalk.white(`--${v.alias}` + ' ' + v.alias ),
-                    default: v.default !== undefined ? chalk.hex('#55ddff')(v.default) : '',
-                    type: chalk.green(v.type),
-                    description: chalk.gray(v.description)
-                })
-            })
-        );
-        console.log(columnify(data, { columns: [ 'alias', 'type', 'default', 'description' ], showHeaders: false }));
-    }
-    console.groupEnd();
-    
-    console.log();
-
-    console.groupEnd();
-    process.exit();
-}
-
-export function printHelp(context) {
-        
-    console.log();
-
-    console.group();
-
-    const pkg = getLocalPackage();
-
-    const rawTitle = pkg.name.toUpperCase();
-    console.log(rawTitle + ' - ' + chalk.grey(pkg.author + ', ' + pkg.license + ', ' + 'v' + pkg.version));
-
-    const combinedTitle = rawTitle + ' - ' + pkg.author + ', ' + pkg.license + ', ' + 'v' + pkg.version;
-    console.log(chalk.gray('-'.repeat(combinedTitle.length)));
-        
-    console.log();
-
-    // show module description
-    console.log(pkg.description);
-
-    console.log();
-
-    console.log('> fs ... ');
-
-    console.log();
-
-    console.group();
-
-    Promise.all(
-        Object.values(context.commands)
-            .map(c => {
-                return commandLoader.load(c, context)
-            })
-    ).then(modules => {
-
-        const groupOrder = { 
-            'File System': 0,
-            'List Management': 1,
-            'Notes': 2,
-            'Web Apps': 3,
-            'Settings': 999
-        };
-
-        const groupSet = new Set(modules.map(m => m.group));
-        const groups = _.sortBy(
-            Array.from(groupSet), 
-            [ g => groupOrder[g] || 1 ]
-        );
-
-        for (let g of groups) {
-            
-            const groupTitle = g||"ungrouped";
-            console.log( chalk.underline.gray(groupTitle)) ;
-            // console.log('-'.repeat(groupTitle.length));
-            console.log();
-
-            console.group();
-
-            const data = modules
-                .filter(m => m.group === g)
-                .map(m => ({
-                    command: '\t' + chalk.yellow(m.command.padEnd(10, ' ')), 
-                    options: Object.values(m.options||{}).map(o => {
-                        return [
-                        '--', 
-                        o.alias, 
-                        ...[o.default !== undefined ? ' ' + chalk.hex('#55ddff')(o.default.toString()) : null]
-                        ].join('');
-                    }).join(' ')
-                }));
-            
-            console.log(columnify(data, { showHeaders: false }));
-            console.groupEnd();
-            console.log();
+    for (let p of paths) {
+        if (fs.existsSync(path.join(p, context.commandName + '.mjs'))) {
+            return commandLoader.getFile(p, context.commandName);
         }
-        
-        console.groupEnd();
-
-    })
-    .catch((reason) => {
-        console.error(reason.message || reason)
-    })
-
+    }
 }
 
 const _validFlags = [ '--help', '--status' ];
 export function parseCommandContext(parentContext, depth, args) {
     
+    debugger
+
     const context = {
       depth,
+      args: [],
+      currentPath: path.resolve('commands'),
+      commandName: '',
+      command: undefined,
+      parentCommand: undefined,
+      commands: {},
+      tail: undefined,
       flagCount: 0,
       flags: {},
-      commandName: '',
-      args: [],
-      commands: {},
-      command: undefined,
-      tail: undefined,
     };
 
     if (parentContext) {
         context.depth = parentContext.depth + 1;
         context.args = parentContext.args;
+        context.currentPath = parentContext.currentPath;
+        context.parentCommand = parentContext.command;
     }
     
     context.loadModule = () => { 
         return commandLoader.load(context.command, context);
     }
-     
+    
 
     // command/flag partitioner
     const processFlag = (token) => {
@@ -214,12 +115,13 @@ export function parseCommandContext(parentContext, depth, args) {
     if (context.args.length > context.depth) {
         // get the command
         context.commandName = context.args[depth];
-        context.command = context.commands[context.commandName];
+        context.command = loadCommand(context);
+        context.currentPath = context.command.path;
     }
     
     // load available commands for the context
     if (context.commandName===context.tail && context.flags.help) {
-        context.commands = loadContextCommands(context, context.args)
+        context.commands = loadAvailableCommands(context)
     }
     
     return context;

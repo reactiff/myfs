@@ -8,7 +8,7 @@ import chalk from "chalk";
 import store from "utils/store.mjs";
 import { parseOptions } from "utils/parseOptions.mjs";
 import { assert } from "utils/assert.mjs";
-import { config } from "./deploy/config.mjs";
+import { config } from "../deploy/config.mjs";
 import { execSync } from "child_process";
 import { promptInput } from "utils/promptInput.mjs";
 
