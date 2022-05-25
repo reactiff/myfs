@@ -31,8 +31,6 @@ function getCommandPaths(context) {
 
 export function loadAvailableCommands(context) {
 
-    debugger
-
     const paths = getCommandPaths(context);
     const allFiles = paths.reduce(
         (files, p) => files.concat(...commandLoader.getFiles(p))
@@ -44,8 +42,6 @@ export function loadAvailableCommands(context) {
 
 export function loadCommand(context) {
 
-    debugger
-    
     const paths = getCommandPaths(context);
 
     for (let p of paths) {
@@ -58,13 +54,12 @@ export function loadCommand(context) {
 const _validFlags = [ '--help', '--status' ];
 export function parseCommandContext(parentContext, depth, args) {
     
-    debugger
 
     const context = {
       depth,
       args: [],
       currentPath: path.resolve('commands'),
-      commandName: '',
+      commandName: undefined,
       command: undefined,
       parentCommand: undefined,
       commands: {},
@@ -120,7 +115,7 @@ export function parseCommandContext(parentContext, depth, args) {
     }
     
     // load available commands for the context
-    if (context.commandName===context.tail && context.flags.help) {
+    if (context.commandName===context.tail) {
         context.commands = loadAvailableCommands(context)
     }
     

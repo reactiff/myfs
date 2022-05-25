@@ -7,25 +7,36 @@ import { getLocalPackage } from 'utils/getLocalPackage.mjs';
 import boxen from "boxen";
 
 
-export function printCommandHelp(module, fsItem, context) {
+export function printHelp(module, fsItem, context) {
 
+    printHeader(module, fsItem, context);
+
+    printAvailableCommands(context);
+    printAvailableOptions(module, fsItem, context);
+
+    printFooter(module, fsItem, context);
+}
+
+function printHeader(module, fsItem, context) {
     console.log();
-
     console.group();
-
     const rawTitle = fsItem.name + ' HELP';
     console.log(chalk.rgb(255, 128, 0)(fsItem.name.toUpperCase()), 'HELP');
     console.log(chalk.gray('-'.repeat(rawTitle.length)));
-
     // show module description
     console.log(module.help);
-
     console.log();
-
     console.log(boxen(chalk.bold.white('> fs ' + (context.args.join(' ') + ' ' + chalk.bgHex('#000')(' ... ') + ' '))));
-
     console.log();
+}
 
+function printFooter(module, fsItem, context) {
+    console.groupEnd();
+}
+
+function printAvailableOptions(module, fsItem, context) {
+
+    
     console.group();
     if (module.options) {
         const data = Object.values(
@@ -42,31 +53,11 @@ export function printCommandHelp(module, fsItem, context) {
         console.log(columnify(data, { columns: ['alias', 'type', 'default', 'description'], showHeaders: false }));
     }
     console.groupEnd();
-
     console.log();
-
-    console.groupEnd();
-    process.exit();
 }
 
-export function printHelp(context) {
-
-    console.log();
-
+function printAvailableCommands(context) {
     console.group();
-
-    const pkg = getLocalPackage();
-
-    const rawTitle = pkg.name.toUpperCase();
-    console.log(rawTitle + ' - ' + chalk.grey(pkg.author + ', ' + pkg.license + ', ' + 'v' + pkg.version));
-
-    const combinedTitle = rawTitle + ' - ' + pkg.author + ', ' + pkg.license + ', ' + 'v' + pkg.version;
-    console.log(chalk.gray('-'.repeat(combinedTitle.length)));
-
-    console.log();
-
-    // show module description
-    console.log(pkg.description);
 
     console.log();
 

@@ -1,8 +1,10 @@
 import fs from "fs";
 import path from "path";
-import { printCommandHelp, printHelp } from "./help.mjs";
+import { printHelp } from "./help.mjs";
 import inspectErrorStack from "./inspectErrorStack.mjs";
 import FSItem from "./myfs/fsItem.mjs";
+
+export const NothingToDo = Symbol.for('NothingToDo');
 
 function load(command, context) {
   return new Promise(resolve => {
@@ -42,22 +44,36 @@ function createCommandModule({ context, m, name, fsitem }) {
     help: m.help,
     group: m.group,
     // yargs calls handler
-    handler: handleCommand({ context, m, name, fsitem }),
+    handler: commandHandler({ context, m, name, fsitem }),
   };
 }
 
-function handleCommand({context, m, name, fsitem}) {
+/////////////////////////////////////////////////////////////////////////// COMMAND HANDLER
+function commandHandler({context, m, fsitem}) {
   return (argv) => {
     return new Promise(resolve => {
       try {
 
+        console.log('handling:', context.commandName);
+
         // if --help is for this command
         if (context.commandName===context.tail && context.flags.help) {
-          printCommandHelp(m, fsitem, context);
+          console.log('printing HELP');
+          printHelp(m, fsitem, context);
           resolve();
+          return;
         }
 
-        m.execute(argv._.slice(1), argv, resolve, fsitem, context).catch(
+        m.execute(argv._.slice(1), argv, resolve, fsitem, context)
+        .then(result => {
+          if (result === NothingToDo) {
+            // this means command not found or missing options, display usage
+            console.log('printing HELP');
+            printHelp(m, fsitem, context);
+          }
+          resolve();
+        })
+        .catch(
           inspectErrorStack
         );
 

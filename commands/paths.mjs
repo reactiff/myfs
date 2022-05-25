@@ -71,6 +71,7 @@ export async function execute(args, argv, resolve, fsitem, context) {
     console.log();
 
     resolve();
+    
   } catch (ex) {
     throw new Error(ex.message);
   }

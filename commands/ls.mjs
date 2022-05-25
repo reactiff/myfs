@@ -73,7 +73,7 @@ export async function execute(args, argv, resolve, fsItem, context) {
         resolve();
       });
               
-
+      resolve(false)
     
   } catch (ex) {
     inspectErrorStack(ex);

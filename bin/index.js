@@ -7,7 +7,6 @@ import _ from "lodash";
 ////////////////////////////////////
 import { nextCommand } from "utils/nextCommand.mjs";
 import { parseCommandContext } from "utils/commandContext.mjs";
-import { printHelp } from "utils/help.mjs";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
 
 /////////////////// bin/index ////////////////////
@@ -22,15 +21,13 @@ chalk.level = 3;
 const args = hideBin(process.argv);
 
 // command context
-const context = parseCommandContext(null, 0, args);
+// const context = parseCommandContext(null, 0, args);
 
 // --help
-if (context.flags.help && context.args.length===0 || !context.command) {
-  printHelp(context);
-  process.exit();
-}
-
-debugger
+// if (context.flags.help && context.args.length===0 || !context.command) {
+//   printHelp(context);
+//   process.exit();
+// }
 
 nextCommand(null, 0, args)
   .catch(err => {
