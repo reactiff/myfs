@@ -9,6 +9,8 @@ export const group = 'File System';
 export async function execute(args, argv, resolve, fsItem, context) {
   try {
 
+    debugger
+    
     return NothingToDo;
 
   } catch (ex) {

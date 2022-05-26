@@ -1,5 +1,5 @@
 import delegate from 'utils/delegate.mjs';
-import store from "utils/store.mjs";
+import store from "utils/store/index.mjs";
 
 // COMMAND MODULE PROPS
 export const help = `Store value by key`;

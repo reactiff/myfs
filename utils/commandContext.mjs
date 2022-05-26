@@ -107,15 +107,23 @@ export function parseCommandContext(parentContext, depth, args) {
         ? context.args[context.args.length - 1] 
         : undefined;
 
-    if (context.args.length > context.depth) {
-        // get the command
-        context.commandName = context.args[depth];
-        context.command = loadCommand(context);
-        context.currentPath = context.command.path;
+    // if ( context.args.length > context.depth) {
+        
+    // }
+    // get the command
+    if (context.args.length === 0) {
+        context.commandName = 'fs';        
     }
+    context.commandName = context.args.length > 0 
+        ? context.args[depth]
+        : 'root'; // root 
+
+    context.command = loadCommand(context);
+    context.currentPath = context.command.path;
+    
     
     // load available commands for the context
-    if (context.commandName===context.tail) {
+    if (context.tail !== undefined && context.commandName === context.tail) {
         context.commands = loadAvailableCommands(context)
     }
     

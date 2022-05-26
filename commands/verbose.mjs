@@ -1,4 +1,4 @@
-import store from "utils/store.mjs";
+import store from "utils/store/index.mjs";
 import chalk from "chalk";
 
 // COMMAND MODULE PROPS

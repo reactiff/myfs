@@ -9,8 +9,6 @@ import remap from "./remap.mjs";
 export function nextCommand(currentContext, depth, args) {
   return new Promise((resolve, reject) => {
 
-    debugger
-
     // parse context
     const context = parseCommandContext(currentContext, depth, args);
     console.log(context.commandName);
@@ -22,7 +20,7 @@ export function nextCommand(currentContext, depth, args) {
     }
 
     // if command is not tail, call nextCommand recursively.
-    if (context.commandName !== context.tail) {
+    if (context.tail !== undefined && context.commandName !== context.tail) {
       nextCommand(currentContext)
         .then(resolve)
         .catch(reject);
@@ -35,8 +33,11 @@ export function nextCommand(currentContext, depth, args) {
       .then(m => {
 
         // call commandHandler (in commandLoader.mjs)
+        const args = context.args.length > 0 
+          ? context.args 
+          : ['root'];
 
-        yargs(context.args)
+        yargs(args)
           .command(m)
           .describe(remap(m.options, {
             key: v => v.alias,

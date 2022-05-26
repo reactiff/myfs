@@ -5,7 +5,7 @@ import myfs from "utils/myfs.mjs";
 import fs from "fs";
 import minimatch from "minimatch";
 import chalk from "chalk";
-import store from "utils/store.mjs";
+import store from "utils/store/index.mjs";
 import { parseOptions } from "utils/parseOptions.mjs";
 import { assert } from "utils/assert.mjs";
 import { config } from "../deploy/config.mjs";

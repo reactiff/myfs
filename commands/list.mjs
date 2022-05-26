@@ -1,4 +1,4 @@
-import store from "utils/store.mjs";
+import store from "utils/store/index.mjs";
 import _ from 'lodash';
 import {assert} from 'utils/assert.mjs';
 

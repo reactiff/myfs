@@ -1,7 +1,7 @@
 import minimatch from 'minimatch';
 import fs from 'fs';
 import path from 'path';
-import store from "utils/store.mjs";
+import store from "utils/store/index.mjs";
 import { enumeratePath } from './enumeratePath.mjs';
 
 import MyFS from "utils/myfs.mjs";

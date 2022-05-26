@@ -1,4 +1,4 @@
-import { capitalize } from "lodash";
+import _ from "lodash";
 import store from "./index.mjs";
 import path from 'path';
 import chalk from 'chalk'
@@ -19,21 +19,21 @@ export class ListStorage {
         const array = store.get(this.uniqueKey) || [];
        
         if (this.unique && array.includes(value)) {
-            console.log(chalk.red(capitalize(this.itemName) + ' already exists:'), value);
+            console.log(chalk.red(_.capitalize(this.itemName) + ' already exists:'), value);
             return;
         }
     
         array.push(value);
         store.set(this.uniqueKey, array);
     
-        console.log(chalk.yellow(capitalize(this.itemName) + ' added:'), value);
+        console.log(chalk.yellow(_.capitalize(this.itemName) + ' added:'), value);
         return;
     }
 
     delete(value) {
         const array = store.get('paths') || [];
         if (!array.includes(value)) {
-            console.error(chalk.red(capitalize(this.itemName) + ' does not exist:'), value);
+            console.error(chalk.red(_.capitalize(this.itemName) + ' does not exist:'), value);
             return;
         }
     
@@ -41,14 +41,14 @@ export class ListStorage {
         array.splice(index, 1);
         store.set(this.uniqueKey, array);
     
-        console.log(chalk.yellow(capitalize(this.itemName) + ' deleted:'), value);
+        console.log(chalk.yellow(_.capitalize(this.itemName) + ' deleted:'), value);
         return;
     }
 
     clear() {
         store.set(this.uniqueKey, []);
     
-        console.log(chalk.yellow('All ' + capitalize(this.itemName) + 's cleared'));
+        console.log(chalk.yellow('All ' + _.capitalize(this.itemName) + 's cleared'));
         return;
     }
 

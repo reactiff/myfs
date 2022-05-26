@@ -1,4 +1,4 @@
-import store from "utils/store.mjs";
+import store from "utils/store/index.mjs";
 import _ from 'lodash';
 
 export const options = {
@@ -7,9 +7,9 @@ export const options = {
     description: 'Add pattern',
     type: 'boolean',
   },
-  'R': {
-    alias: 'remove',
-    description: 'Remove pattern',
+  'D': {
+    alias: 'delete',
+    description: 'Delete pattern',
     type: 'boolean',
   },
   'C': {
