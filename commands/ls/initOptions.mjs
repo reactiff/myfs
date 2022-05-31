@@ -10,15 +10,15 @@ import { options } from "./options.mjs";
 // const minimatch = require("minimatch");
 import minimatch from "minimatch";
 
-export function initOptions(args, argv) {
+export function initOptions(argv) {
   
   const opts = {
     order: argv.order || argv.O || options.O.default,
     // global: argv.global || argv.G || options.G.default,
-    // recursive: argv.recursive || argv.R || options.R.default,
-    pattern: argv.pattern || argv.P,
-    search: argv.search || argv.S,
-    dirs: argv.dirs || argv.D,
+    recursive: argv.recursive || argv.R || options.R.default,
+    // pattern: argv.pattern || argv.P,
+    // search: argv.search || argv.S,
+    // dirs: argv.dirs || argv.D,
     // files: argv.files || argv.F,
   };
 
@@ -27,7 +27,7 @@ export function initOptions(args, argv) {
   if (opts.pattern) {
     if (opts.pattern.startsWith("/")) {
       const regex = parseRegexInput(opts.pattern);
-      opts.pattern = (path) => {
+      opts.matchPattern = (path) => {
         path.match(regex);
       };
     } else {
@@ -45,7 +45,7 @@ export function initOptions(args, argv) {
     opts.search = parseRegexInput(opts.search);
   }
 
-  opts.order = getFileSorter(opts.order);
+  opts.sorter = getFileSorter(opts.order);
   opts.dir = path.resolve(process.cwd());
 
   return opts;

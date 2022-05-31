@@ -143,8 +143,8 @@ class myfs {
         return this;
     }
 
-    sort(order) {
-        this.sortOrder = order;
+    sort(sorter) {
+        this.sortOrder = sorter;
         return this;
         
     }

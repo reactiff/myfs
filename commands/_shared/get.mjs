@@ -5,18 +5,22 @@ import _ from 'lodash';
 export const help = `Get value by key`;
 export const group = 'Settings';
 
-export async function execute(args, argv, resolve, fsitem) {
+export async function execute(context) {
   try {
+
+    debugger
+
+    const { args, argv } = context;
 
     if (args.length < 1) {
       console.log(store.all);
       return
     }
+
     const value = _.get(store.all, args[0]);
 
     console.log(value);
-    
-    resolve();
+        
   } catch (ex) {
     throw new Error(ex.message);
   }

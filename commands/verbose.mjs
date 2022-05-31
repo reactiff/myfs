@@ -5,12 +5,14 @@ import chalk from "chalk";
 export const help = `Toggle verbosity`;
 export const group = 'Settings';
 
-export async function execute(args, argv, resolve) {
+export async function execute(context) {
   try {
 
-    const param = args[0];
+    const { args, argv } = context;
+
+    // const param = args[0];
     const stored = Boolean(store.get("verbose"));
-    const value = param !== undefined && param !== null ? Boolean(param) : !stored;
+    const value = !stored;
 
     // Do your thing!
     store.set('verbose', value);
@@ -21,7 +23,7 @@ export async function execute(args, argv, resolve) {
       console.log(chalk.gray("verbose: false"));
     }
 
-    resolve();
+    
   } catch (ex) {
     throw new Error(ex.message);
   }

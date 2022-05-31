@@ -5,107 +5,171 @@ import moment from "moment";
 chalk.level = 3;
 
 export function printResults(fsItems, options) {
-    const { dir, order } = options;
+
+  console.log();
+  console.log(`${fsItems.items.length} results`);
+  console.log();
+
+  const colDefs = getColDefs(fsItems, options);
   
-    console.log(chalk.yellow(dir), chalk.white(`(${fsItems.items.length} results)`));
-  
-    const ch = printColHeaders(fsItems, options);
-    
-    let cnt = 1;
+  printColHeaders(colDefs, options);
 
-    fsItems.items.forEach((f) => {
-      if (ch.length) {
-        const c = ch[1];
+  let cnt = 1;
 
-        let timeColor;
-        const ms = f.stat[c.name];
-        const msDiff = Date.now() - ms;
-        const ms_day = 86400000 / 4;
-        const pct_of_day = msDiff / ms_day;
-        const G = 128 - Math.round(128 * pct_of_day);
-        
-        if (msDiff < ms_day) {
-          timeColor = [ 128, 128 + G, 128 ];
-        }
-        else {
-          timeColor = [ 64, 64, 64 ];
-        }
+  console.log(global.__basedir);
 
-        const format = (x) => c.format(c.convert(x))
+  fsItems.items.forEach((f) => {
+    if (colDefs.length) {
+      const sizeCol = colDefs[2];
+      const timeCol = colDefs[3];
+      
+      let timeColor;
+      const ms = f.stat[timeCol.name];
+      const msDiff = Date.now() - ms;
+      const ms_day = 86400000 / 4;
+      const pct_of_day = msDiff / ms_day;
+      const G = 128 - Math.round(128 * pct_of_day);
 
-        const posix = f.path.replace(/\\/g, '/');
-        // if (posix.includes('a-server/workspaces/modules/securityController/methods/')) debugger
-        
-        // const relPosix = '.' + f.path.slice(dir.length);
-        
-        console.log(
-          chalk.gray((cnt++).toString().padEnd(3)),
-          f.name.padEnd(ch[0].length, ' '), 
-          chalk.rgb(...timeColor)(format(f.stat[c.name])),
-          chalk.gray( posix ),
-        );
+      if (msDiff < ms_day) {
+        timeColor = [128, 128 + G, 128];
+      } else {
+        timeColor = [64, 64, 64];
       }
-      else {
-        console.log(f.fullPath);
-      }
-    });
-  
-    console.log("");
-    // console.groupEnd();
-  }
-  
-  
-  function printColHeaders(fsItems, options) {
-    if (options.order.name === 'name') return [];
-  
-    let order;
-    let convert;
-    let makeFormat = (l) => (x) => x.toString().padStart(l, ' ');
-    switch (options.order.name) {
-      case 'size':
-        order = 'size';
-        convert = (x) => x.toString();
-        // makeFormat = (l) => (x) => x.toString().padStart(l, ' ')
-        break;
-      case 'btime':
-        order = 'birthtimeMs'
-        convert = (x) => {
-          const iso = new Date(x).toISOString()
-          return moment(new Date(x)).fromNow(); 
-        }
-        // makeFormat = (l) => (x) => x.replace('T', ' ').padStart(l, ' ')
-        break;
-      default:
-        order = options.order.name + 'Ms';
-        convert = (x) => {
-          const iso = new Date(x); //.toISOString()
-          return moment(new Date(x)).fromNow(); 
-        }
-        // makeFormat = (l) => (x) => x.replace('T', ' ').padStart(l, ' ')
+
+      const formatTime = (x) => timeCol.format(timeCol.convert(x));
+      const formatSize = (x) => sizeCol.format(sizeCol.convert(x));
+
+      const posix = f.path.replace(/\\/g, "/");
+      const relativePath = '.' + posix.slice(global.__basedir.length);
+
+      console.log(
+
+        // #
+        chalk.gray((cnt++).toString().padEnd(3)),
+
+        // name
+        f.name.padEnd(colDefs[1].length, " "),
+
+        // size
+        chalk.gray(formatSize(f.stat.size)),
+
+        // time
+        chalk.rgb(...timeColor)(formatTime(f.stat[timeCol.name])),
+
+        // path
+        chalk.gray(relativePath)
+      );
+    } else {
+      console.log(f.fullPath);
     }
-    
-    const l1 = fsItems.items.reduce((a, item) => Math.max(a, item.name.length), 0);
-    const l2 = fsItems.items.reduce((a, item) => {
-      const value = convert(item.stat[order]);
-      return Math.max(a, value.length)
-    }, 0);
-    const l3 = fsItems.items.reduce((a, item) => {
-      const value = item.path;
-      return Math.max(a, value.length)
-    }, 0);
-  
-  
-    console.log('#  ', 'Name'.padEnd(l1, ' '), order.padEnd(l2, ' '), 'Path'.padEnd(l3, ' '));
-    console.log(
-      Array.from({length: 3}, (x, i) => '-').join(''),
-      Array.from({length: l1}, (x, i) => '-').join(''),
-      Array.from({length: l2}, (x, i) => '-').join(''),
-      Array.from({length: l3}, (x, i) => '-').join(''),
-    );
-  
-    return [
-      { name: 'name', length: l1 },
-      { name: order, length: l2, convert, format: makeFormat(l2) },
-      { name: 'path', length: l3, convert, format: makeFormat(l3) },
-    ];
+  });
+
+  console.log("");
+}
+
+
+function convertTime(x) {
+  return moment(new Date(x)).fromNow(true);
+}
+
+function convertSize(x) {
+  let value, units;
+  return {
+    value: x,
+    units: '',
+  };
+
+  // the following converts to KBs and MBs etc.
+
+  // if (x < 1024) { 
+  //   value = parseInt(x);
+  //   units = ' B';
+  // }
+  // else if (x < 1024 * 1000) {
+  //   value = Math.ceil(parseFloat(x / 1024));
+  //   units = 'KB';
+  // }
+  // else if (x < 1024 * 1000000) {
+  //   value = Math.ceil(parseFloat(x / 1024000));
+  //   units = 'MB';
+  // }
+  // else if (x < 1024 * 1000000000) {
+  //   value = Math.ceil(parseFloat(x / 1024000000));
+  //   units = 'GB';
+  // }
+  // else if (x < 1024 * 1000000000000) {
+  //   value = Math.ceil(parseFloat(x / 1024000000000));
+  //   units = 'TB';
+  // }
+  // return {
+  //   value, 
+  //   units
+  // }; 
+}
+
+function padLeft(l) {
+  return (x) => x.toString().padStart(l, " ");
+}
+
+function padRight(l) {
+  return (x) => x.toString().padEnd(l, " ");
+}
+
+function getColDefs(fsItems, options) {
+  let order;
+  switch (options.order) {
+    case "name":
+      order = "name";
+      break;
+    case "size":
+      order = "size";
+      break;
+    case "btime":
+      order = "birthtimeMs";
+      break;
+    default:
+      order = options.order + "Ms";
   }
+
+  const timeColName = options.order === "name" ? "mtimeMs" : order;
+
+  // name
+  const l1 = fsItems.items.reduce(
+    (a, item) => Math.max(a, item.name.length),
+    0
+  );
+
+  // size
+  const l2 = fsItems.items.reduce((a, item) => {
+    const s = convertSize(item.stat.size);
+    const value = s.value + s.units;
+    return Math.max(a, value.length);
+  }, 0);
+
+  // time
+  const l3 = fsItems.items.reduce((a, item) => {
+    const value = convertTime(item.stat[timeColName]);
+    return Math.max(a, value.length);
+  }, 0);
+
+  // path
+  const l4 = fsItems.items.reduce((a, item) => {
+    const value = item.path;
+    return Math.max(a, value.length);
+  }, 0);
+
+  return [
+    { name: "#", length: 3 },
+    { name: "name", length: l1 },
+    { name: "size", length: l2, convert: convertSize, format: (s) => (s.value + s.units).padStart(l2, " ") },
+    { name: timeColName, length: l3, convert: convertTime, format: padLeft(l3) },
+    { name: "path", length: l4 },
+  ];
+}
+
+function printColHeaders(colDefs, options) {
+  const headers = [...colDefs.map((cd) => cd.name.padEnd(cd.length, " "))];
+  console.log(...headers);
+  const dashes = [...colDefs.map((cd) => "-".repeat(cd.length))];
+  console.log(...dashes);
+}

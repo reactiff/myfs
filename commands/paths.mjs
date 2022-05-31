@@ -32,9 +32,11 @@ export const options = {
 export const help = `Manage working paths`;
 export const group = 'Settings';
 
-export async function execute(args, argv, resolve, fsitem, context) {
+export async function execute(context) {
   try {
-    
+
+    const { argv } = context;
+
     debugger
     
     parseOptions(argv, options);
@@ -43,17 +45,17 @@ export async function execute(args, argv, resolve, fsitem, context) {
 
     if (argv.add) {
       pathStorage.add(argv.add);
-      return resolve();
+      return;
     }
 
     if (argv.delete) {
       pathStorage.delete(argv.delete);
-      return resolve();
+      return;
     }
 
     if (argv.clear) {
       pathStorage.crear();
-      return resolve();
+      return;
     }
 
     const items = pathStorage.getAll();
@@ -67,11 +69,8 @@ export async function execute(args, argv, resolve, fsitem, context) {
       console.group(chalk.yellow('(NO PATHS STORED)'))  
     }
     
-    
     console.log();
 
-    resolve();
-    
   } catch (ex) {
     throw new Error(ex.message);
   }

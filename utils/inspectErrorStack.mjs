@@ -46,6 +46,7 @@ function printSchemaValidationErrors(error) {
 
 function inspectErrorStack(error) {
 
+  debugger
   if (error.type === "schemaValidation") {
     printSchemaValidationErrors(error);
   }

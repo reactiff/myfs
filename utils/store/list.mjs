@@ -3,61 +3,85 @@ import store from "./index.mjs";
 import path from 'path';
 import chalk from 'chalk'
 import fs from 'fs';
+import boxen from "boxen";
 
+/** Do not pass strings to Storage constructors!  Use storageKeys dictionary. */
 export class ListStorage {
 
     uniqueKey;
     itemName;
 
-    constructor(uniqueKey, itemName, unique) {
+    constructor(uniqueKey, itemName = 'item', unique = false) {
         this.uniqueKey = uniqueKey;
         this.itemName = itemName || 'item';
         this.unique = unique;
     }
 
     add(value) {
-        const array = store.get(this.uniqueKey) || [];
+
+        debugger
+
+        
+        // const array = store.get(this.uniqueKey) || [];
        
-        if (this.unique && array.includes(value)) {
-            console.log(chalk.red(_.capitalize(this.itemName) + ' already exists:'), value);
-            return;
-        }
+        // if (this.unique && array.includes(value)) {
+        //     console.log(chalk.red(_.capitalize(this.itemName) + ' already exists:'), value);
+        //     return;
+        // }
     
-        array.push(value);
-        store.set(this.uniqueKey, array);
+        // array.push(value);
+        // store.set(this.uniqueKey, array);
     
+        store.add(this.uniqueKey, value);
         console.log(chalk.yellow(_.capitalize(this.itemName) + ' added:'), value);
         return;
     }
 
     delete(value) {
-        const array = store.get('paths') || [];
-        if (!array.includes(value)) {
-            console.error(chalk.red(_.capitalize(this.itemName) + ' does not exist:'), value);
-            return;
-        }
+
+        debugger
+
+        // const array = store.get(this.uniqueKey) || [];
+        // if (!array.includes(value)) {
+        //     console.error(chalk.red(_.capitalize(this.itemName) + ' does not exist:'), value);
+        //     return;
+        // }
     
-        const index = array.findIndex(x => x === value);
-        array.splice(index, 1);
-        store.set(this.uniqueKey, array);
+        // const index = array.findIndex(x => x === value);
+        // array.splice(index, 1);
+        // store.set(this.uniqueKey, array);
     
+        store.remove(this.uniqueKey, value);
         console.log(chalk.yellow(_.capitalize(this.itemName) + ' deleted:'), value);
         return;
     }
 
     clear() {
         store.set(this.uniqueKey, []);
-    
         console.log(chalk.yellow('All ' + _.capitalize(this.itemName) + 's cleared'));
         return;
     }
 
     getAll() {
-        store.get(this.uniqueKey) || []
+
+
+        const items = store.get(this.uniqueKey) || [];
+        const decoded = items.map(item => decodeURIComponent(item));
+        return decoded;
+    }
+
+    show(title) {
+
+        console.log();
+        console.log(boxen(' ' + title + ' '));
+        console.log();
+
+        store.show(this.uniqueKey);
     }
 }
 
 
+/** Do not pass strings to Storage constructors!  Use storageKeys dictionary. */
 export class PathListStorage extends ListStorage {
     constructor(uniqueKey) {
         super(uniqueKey, 'path', true);
@@ -86,9 +110,10 @@ export class PathListStorage extends ListStorage {
     }
 }
 
-
+/** Do not pass strings to Storage constructors!  Use storageKeys dictionary. */
 export class GlobListStorage extends ListStorage {
     constructor(uniqueKey) {
+        
         super(uniqueKey, 'glob', true);
     }
 }

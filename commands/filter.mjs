@@ -1,15 +1,24 @@
-import parseArgs from "utils/validation.mjs";
-import delegate from 'utils/delegate.mjs';
-import { NothingToDo } from "utils/commandLoader.mjs";
+import { ShowHelp } from "utils/help.mjs";
 
 // COMMAND MODULE PROPS
 export const help = `fs filter lets you globally manage filter settings for searching files`;
 export const group = 'File System';
 
-export async function execute(args, argv, resolve, fsItem, context) {
+export const options = {
+  'O': {
+    alias: 'some-feature',
+    description: 'Enables some feature',
+    type: 'boolean',
+  },
+  
+};
+
+export async function execute(context) {
   try {
 
-    return NothingToDo;
+    const { argv } = context;
+    
+    return ShowHelp;
 
   } catch (ex) {
     throw new Error(ex.message || ex);

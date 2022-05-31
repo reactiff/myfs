@@ -1,5 +1,6 @@
-import store from "utils/store/index.mjs";
 import _ from 'lodash';
+import { GlobListStorage } from "utils/store/list.mjs";
+import { StorageKeys } from "utils/store/StorageKeys.mjs";
 
 export const options = {
   'A': {
@@ -16,46 +17,33 @@ export const options = {
     alias: 'clear',
     type: 'boolean',
   },
-  'H': {
-    alias: 'hist',
-    type: 'boolean',
-  },
-  'R': {
-    alias: 'revert',
-    type: 'boolean',
-  },
 };
 
 // COMMAND MODULE PROPS
 export const help = `Manage excluded file patterns (globs)`;
 export const group = 'Settings';
 
-export async function execute(args, argv, resolve, fsitem) {
+const store = new GlobListStorage(StorageKeys.ExcludedGlobs);
+
+export async function execute(context) {
   try {
+
+    const { argv } = context;
 
     if (argv.A||argv.add) {
       store.add('exclude', argv.A||argv.add);
     }
 
-    if (argv.R||argv.remove) {
-      store.remove('exclude', argv.R||argv.remove);
+    if (argv.D||argv.delete) {
+      store.delete('exclude', argv.D||argv.delete);
     }
 
     if (argv.C||argv.clear) {
       store.clear('exclude');
     }
-
-    if (argv.H||argv.hist) {
-      store.hist('exclude');
-    }
-
-    if (argv.R||argv.revert) {
-      store.revert('exclude');
-    }
-
-    store.show('exclude', item => decodeURIComponent(item));
-
-    resolve();
+    
+    store.show( 'Excluded globs');
+    
   } catch (ex) {
     throw new Error(ex.message);
   }

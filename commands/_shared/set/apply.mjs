@@ -1,9 +1,10 @@
 import store from "utils/store/index.mjs";
 import _ from 'lodash';
-import delegate from 'utils/delegate.mjs';
 
-export async function execute(args, argv, resolve, fsitem) {
+export async function execute(context) {
   try {
+
+    const { args, argv } = context;
     
     const objectId = args[0];
     const key = args[1];
@@ -17,8 +18,7 @@ export async function execute(args, argv, resolve, fsitem) {
     store.set(objectId, object);
     
     console.log(object);
-    
-    resolve();
+        
   } catch (ex) {
     throw new Error(ex.message);
   }

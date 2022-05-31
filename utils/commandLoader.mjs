@@ -1,10 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { printHelp } from "./help.mjs";
+import { ShowHelp, printHelp } from "./help.mjs";
 import inspectErrorStack from "./inspectErrorStack.mjs";
 import FSItem from "./myfs/fsItem.mjs";
-
-export const NothingToDo = Symbol.for('NothingToDo');
 
 function load(command, context) {
   return new Promise(resolve => {
@@ -54,28 +52,24 @@ function commandHandler({context, m, fsitem}) {
     return new Promise(resolve => {
       try {
 
-        console.log('handling:', context.commandName);
-
         // if --help is for this command
         if (context.commandName===context.tail && context.flags.help) {
-          console.log('printing HELP');
           printHelp(m, fsitem, context);
           resolve();
           return;
         }
 
-        m.execute(argv._.slice(1), argv, resolve, fsitem, context)
-        .then(result => {
-          if (result === NothingToDo) {
-            // this means command not found or missing options, display usage
-            console.log('printing HELP');
-            printHelp(m, fsitem, context);
-          }
-          resolve();
-        })
-        .catch(
-          inspectErrorStack
-        );
+        m.execute(Object.assign(context, { argv }))
+          .then(async (result) => {
+            if (result === ShowHelp) {
+              // this means command not found or missing options, display usage
+              await printHelp(m, fsitem, context);
+            }
+            resolve();
+          })
+          .catch(err => {
+            inspectErrorStack(err)
+          });
 
       } catch (err) {
         inspectErrorStack(err);
@@ -99,6 +93,7 @@ function loadAll(abspath) {
 
 
 function getFiles(abspath) {
+  if (!fs.existsSync(abspath)) return [];
   let dirItems = fs.readdirSync(abspath);
   let commands = [];
   for (let file of dirItems) {

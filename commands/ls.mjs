@@ -19,10 +19,10 @@ function print(results, scope) {
   }
 }
 
-export async function execute(args, argv, resolve, fsItem, context) {
+export async function execute(context) {
   try {
 
-    const opts = initOptions(args, argv);
+    const opts = initOptions(context.argv);
     const { dir } = opts;
 
     const serveResults = opts.serve ? webbify : terminalServeSearchResults;
@@ -32,7 +32,7 @@ export async function execute(args, argv, resolve, fsItem, context) {
     myfs
       .options(opts)
       .path(dir)
-      .sort(opts.order)
+      .sort(opts.sorter)
       .onResults((update) => {
         debugger;
         serveResults(update, { dir: opts.dir, myfs, opts });
@@ -42,10 +42,10 @@ export async function execute(args, argv, resolve, fsItem, context) {
     if (opts.files) { myfs.files(); }
 
     const results = myfs.execute();
-        
+    
+
     if (!opts.webbify) {
       print(results, { dir, opts });
-      resolve();
       return;
     }
     
@@ -61,20 +61,14 @@ export async function execute(args, argv, resolve, fsItem, context) {
     const data = results.items
       .map(i => ({ ...{ title: i.name }, ...i.stat }));
     
-    webbify(schema)
-      .then(p => {
-        
-        p.render({ 
-          target: "main", 
-          template: "item", 
-          data 
-        });
+    const p = await webbify(schema).catch(inspectErrorStack);
 
-        resolve();
-      });
-              
-      resolve(false)
-    
+    p.render({ 
+      target: "main", 
+      template: "item", 
+      data 
+    });
+      
   } catch (ex) {
     inspectErrorStack(ex);
   }

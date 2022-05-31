@@ -31,9 +31,10 @@ export const options = {
 export const help = `Working with lists`;
 export const group = 'List Management';
 
-export async function execute(args, argv, resolve, fsitem) {
-
+export async function execute(context) {
   try {
+
+    const { argv } = context;
 
     debugger
 
@@ -67,8 +68,7 @@ export async function execute(args, argv, resolve, fsitem) {
     //
 
     store.show(name, (item) => decodeURIComponent(item));
-
-    resolve();
+    
   } catch (ex) {
     throw new Error(ex.message);
   }

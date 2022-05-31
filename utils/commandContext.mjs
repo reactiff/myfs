@@ -4,129 +4,91 @@ import path from "path";
 import commandLoader from "./commandLoader.mjs";
 import toDictionary from "./toDictionary.mjs";
 
-// export function getPath(context, chain) {
-//     const partialTokens = chain.slice(0, context.depth);
-//     const relativePath = path.join(['commands', ...partialTokens ]);
-//     const _path = path.resolve(
-//         global.__basedir, 
-//         relativePath
-//     );
-//     return _path;
-// }   
-
-function getCommandPaths(context) {
-    const parentCommand = context.parentCommand;
-    const parentPath = context.parentCommand 
-        ? parentCommand.path 
-        : 'commands'; 
-    
-    const pathFromParent = path.resolve(parentPath);
-    const sharedPath = path.resolve('commands/_shared');
-
-    return [
-        pathFromParent,
-        sharedPath,
-    ]
-}
-
 export function loadAvailableCommands(context) {
+    const pathToSubsommands = context.commandName === 'fs' 
+        ? context.currentPath
+        : path.join(context.currentPath, context.commandName, 'commands');
 
-    const paths = getCommandPaths(context);
-    const allFiles = paths.reduce(
-        (files, p) => files.concat(...commandLoader.getFiles(p))
-    , []);
-
+    const allFiles = commandLoader.getFiles(pathToSubsommands);
     const commands = toDictionary(allFiles, (cmd) => cmd.name);
     return commands;
 }
 
 export function loadCommand(context) {
-
-    const paths = getCommandPaths(context);
-
-    for (let p of paths) {
-        if (fs.existsSync(path.join(p, context.commandName + '.mjs'))) {
-            return commandLoader.getFile(p, context.commandName);
-        }
+    const filePath = path.join(
+        context.currentPath, 
+        context.commandName + '.mjs'
+    );
+    if (fs.existsSync(filePath)) {
+        return commandLoader.getFile(context.currentPath, context.commandName);
     }
 }
 
-const _validFlags = [ '--help', '--status' ];
+const _validFlags = [ '--help' ];
 export function parseCommandContext(parentContext, depth, args) {
     
-
     const context = {
       depth,
-      args: [],
+      args: args || parentContext.args,
+      commandTokens: [],
       currentPath: path.resolve('commands'),
       commandName: undefined,
       command: undefined,
       parentCommand: undefined,
       commands: {},
       tail: undefined,
-      flagCount: 0,
       flags: {},
-    };
-
-    if (parentContext) {
-        context.depth = parentContext.depth + 1;
-        context.args = parentContext.args;
-        context.currentPath = parentContext.currentPath;
-        context.parentCommand = parentContext.command;
-    }
-    
-    context.loadModule = () => { 
+      error: undefined,
+      loadModule() { 
         return commandLoader.load(context.command, context);
-    }
+      }, 
+      argv: undefined, // will be merged by handler
+    };
     
+    context.flags.help = Boolean(context.args.includes('--help'));
 
-    // command/flag partitioner
-    const processFlag = (token) => {
-      if (_validFlags.includes(token)) {
-        const flag = token.replace(/--/g, '');
-        context.flags[flag] = true;
-        context.flagCount++;
-        return true;
-      }
-      if (context.flagCount) {
-        console.log(chalk.bgRed.white('Only flags can follow flags'));
-        process.exit();
-      }
-    }
-
-    // main token iterator
-    if (!parentContext) {
+    // collect command tokens (up to first flag)
+    if (args) {
         for (let token of args) {
-            if (processFlag(token)) continue;
-            context.args.push(token);
+            if (token.startsWith('-')) break;
+            context.commandTokens.push(token);
         }
     }
     
     // get the tail (last command)
-    context.tail =  context.args.length > 0 
-        ? context.args[context.args.length - 1] 
+    context.tail =  context.commandTokens.length > 0 
+        ? context.commandTokens[context.commandTokens.length - 1] 
         : undefined;
 
-    // if ( context.args.length > context.depth) {
-        
-    // }
-    // get the command
-    if (context.args.length === 0) {
-        context.commandName = 'fs';        
-    }
-    context.commandName = context.args.length > 0 
-        ? context.args[depth]
-        : 'root'; // root 
+    // get current command name
+    context.commandName = context.commandTokens.length > 0 
+        ? context.commandTokens[depth]
+        : 'fs'; // root  command
 
     context.command = loadCommand(context);
-    context.currentPath = context.command.path;
-    
+    if (!context.command) {
+        context.error = { 
+            message: 'Invalid command: ' + context.commandName 
+        };
+    }
     
     // load available commands for the context
-    if (context.tail !== undefined && context.commandName === context.tail) {
+    const isRootCommand = context.tail === undefined && context.commandName === 'fs';
+    const isTailCommand = context.tail !== undefined && context.commandName === context.tail
+    if (isRootCommand || isTailCommand) {
         context.commands = loadAvailableCommands(context)
     }
     
+    if (parentContext) {
+        context.depth = parentContext.depth + 1;
+        context.commandTokens = parentContext.commandTokens;
+        context.parentCommand = parentContext.command;
+        context.currentPath = path.join(
+            parentContext.currentPath, 
+            context.commandName
+        );
+    }
+
     return context;
   }
   

@@ -46,8 +46,11 @@ export const options = {
   },
 };
 
-export async function execute(args, argv, resolve) {
+export async function execute(context) {
   try {
+
+    const { args, argv } = context;
+    
     // const { $0, app, ...params } = argv;
 
     const src = argv.src || argv.S;
@@ -82,7 +85,6 @@ export async function execute(args, argv, resolve) {
     //   // }
     // };
 
-    resolve();
   } catch (ex) {
     throw new Error(ex.message);
   }

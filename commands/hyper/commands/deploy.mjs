@@ -8,7 +8,7 @@ import chalk from "chalk";
 import store from "utils/store/index.mjs";
 import { parseOptions } from "utils/parseOptions.mjs";
 import { assert } from "utils/assert.mjs";
-import { config } from "../deploy/config.mjs";
+import { config } from "../../deploy/config.mjs";
 import { execSync } from "child_process";
 import { promptInput } from "utils/promptInput.mjs";
 
@@ -233,17 +233,19 @@ function getSSHCommandList(d) {
   return commands;
 }
 
-export async function execute(args, argv, resolve) {
+export async function execute(context) {
+  
+  const { args, argv } = context;
+    
+  const m = await import('node-ssh')
+    .catch(ex => {
+      console.log(chalk.bgRed.white('NodeSSH is not available in this environment or build'));
+    });
 
-  import('node-ssh')
-  .then(m => {
-    debugger
-    NodeSSH = m.NodeSSH;
-    safeExecute(args, argv, resolve);
-  })
-  .catch(ex => {
-    console.log(chalk.bgRed.white('NodeSSH is not available in this environment or build'));
-  });
+  debugger
+  NodeSSH = m.NodeSSH;
+  await safeExecute(args, argv, resolve);
+
 }
 
 
@@ -331,15 +333,11 @@ export async function safeExecute(args, argv, resolve) {
     console.log("\n");
     console.groupEnd();
 
-    promptInput("Proceed with deployment? [y/n]").then((input) => {
-      if (input === "y") {
-        run(commands).then(() => {
-          process.exit(1);
-        });
-      } else {
-        process.exit(0);
-      }
-    });
+    const input = await promptInput("Proceed with deployment? [y/n]")
+    if (input === "y") {
+      await run(commands);
+    }
+  
   } catch (ex) {
     inspectErrorStack(ex);
   }

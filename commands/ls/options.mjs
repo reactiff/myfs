@@ -22,12 +22,12 @@ export const options = {
   //   type: "boolean",
   //   default: false,
   // },
-  // R: {
-  //   alias: "recursive",
-  //   description: "search all sub-dirs. Default TRUE.",
-  //   type: "boolean",
-  //   default: true,
-  // },
+  R: {
+    alias: "recursive",
+    description: "search all sub-dirs. Default TRUE.",
+    type: "boolean",
+    default: true,
+  },
   P: {
     alias: "pattern",
     description: "Path pattern to match",
@@ -40,9 +40,9 @@ export const options = {
   },
   W: {
     alias: "webbify",
-    description: "Display results in ",
+    description: "Display results in a browser",
     type: "boolean",
     default: false,
   },
-
+  
 };

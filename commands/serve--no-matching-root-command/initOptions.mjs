@@ -12,6 +12,8 @@ import minimatch from "minimatch";
 
 export function initOptions(args, argv) {
 
+  debugger
+  
   const opts = {
     order: argv.order || argv.O || options.O.default,
     global: argv.global || argv.G || options.G.default,

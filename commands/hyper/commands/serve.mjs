@@ -7,11 +7,12 @@ import myfs from "utils/myfs.mjs";
 export const help = `Serve a virtual Web App using schema.*.json configuration`;
 export const group = 'Web Apps';
 
-export async function execute(args, argv, resolve) {
+export async function execute(context) {
   try {
 
+    const { args, argv } = context;
+    
     myfs.match('schema.*').then(
-      
       files => {
         const schema = files.first().json();
         schema.port = argv.port || 8080;
@@ -22,7 +23,6 @@ export async function execute(args, argv, resolve) {
       }
     );
 
-    resolve();
   } catch (ex) {
     inspectErrorStack(ex);
   }

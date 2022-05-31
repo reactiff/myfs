@@ -49,9 +49,11 @@ function createProgress(data, options) {
   };
 }
 
-export async function execute(args, argv, resolve, scope) {
+export async function execute(context) {
   try {
-    // parseArgs(args, argv, [["ls"]]);
+
+    const { args, argv } = context;
+    
 
     debugger;
 
@@ -89,7 +91,6 @@ export async function execute(args, argv, resolve, scope) {
         debugger;
       });
 
-    resolve();
   } catch (ex) {
     throw new Error(ex.message);
   }

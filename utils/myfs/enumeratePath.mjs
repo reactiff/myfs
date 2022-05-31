@@ -3,11 +3,15 @@ import path from 'path';
 import fs from 'fs';
 import fsItem from './fsItem.mjs';
 import minimatch from 'minimatch';
+import { GlobListStorage } from '../store/list.mjs';
+import { StorageKeys } from '../store/StorageKeys.mjs';
 
-const excludeGlobPatterns = [];
-for (let p of (store.get('exclude') || [])) {
-    excludeGlobPatterns.push(p);
-}
+
+const excludedGlobStorage = new GlobListStorage(StorageKeys.ExcludedGlobs);
+const excludeGlobPatterns = excludedGlobStorage.getAll();
+// for (let p of (store.get('exclude') || [])) {
+//     excludeGlobPatterns.push(p);
+// }
 
 export function enumeratePath(p, options, search) {
     
@@ -31,24 +35,22 @@ export function enumeratePath(p, options, search) {
 
         let posixPath = fullPath.replace(/\\/g, "/");
 
-        if (!options.includeAll) {
 
-            if (isFile && options.matchPattern) {
-                let patternMatched;
-                patternMatched = options.matchPattern(posixPath);
-                if (!patternMatched) {
-                    search.mismatchedPatterns.push(fullPath);
-                    return allItems;
-                }    
-            }
-
-            const excludedByGlob = excludeGlobPatterns.some(glob => minimatch(posixPath, glob));
-
-            if (excludedByGlob) {
-                search.excludedItems.push(posixPath);
+        if (isFile && options.matchPattern) {
+            let patternMatched = options.matchPattern(posixPath);
+            if (!patternMatched) {
+                search.mismatchedPatterns.push(fullPath);
                 return allItems;
-            }
+            }    
         }
+
+        const excludedByGlob = excludeGlobPatterns.some(glob => minimatch(posixPath, glob));
+
+        if (excludedByGlob) {
+            search.excludedItems.push(posixPath);
+            return allItems;
+        }
+    
 
         // If it got here, the file is included
         const fsi = new fsItem({ 

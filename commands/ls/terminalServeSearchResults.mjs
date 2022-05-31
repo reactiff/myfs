@@ -6,6 +6,8 @@ import boxen from "boxen";
 export function terminalServeSearchResults(update, scope) {
   const { opts } = scope;
 
+  debugger
+  
   console.log("\n");
   console.log(
     boxen("Search results for: " + chalk.magenta(opts.search), { padding: 1 })

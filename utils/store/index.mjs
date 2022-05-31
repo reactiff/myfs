@@ -43,8 +43,8 @@ function hist(k) {
   console.group(chalk.yellow(`"${k}" history`));
   for (let entry of history) {
     const timestampCaption = moment(new Date(entry.timestamp)).fromNow();
-    console.group( chalk.underline(timestampCaption) );
-    show(k, (item) => decodeURIComponent( chalk.green(item)), entry.state);
+    console.group(chalk.underline(timestampCaption));
+    show(k, (item) => decodeURIComponent(chalk.green(item)), entry.state);
     console.groupEnd();
   }
 }
@@ -58,22 +58,23 @@ function clear(k, clearedState) {
 function revert(k) {
   const value = _revert(k);
   console.log(chalk.yellow(`"${k}" reverted to`));
-  show(k, (item) => decodeURIComponent( chalk.green(item)), value);
+  show(k, (item) => decodeURIComponent(chalk.green(item)), value);
   process.exit();
 }
 
 function show(k, formatItem, items) {
   
-  !items && console.log(chalk.yellow(k));
-  
-    const state = items || store.get(k);
+  const state = items || store.get(k);
   if (Array.isArray(state)) {
-    for (let item of state) {
-      const text = formatItem ? formatItem(item) : item;
-      console.log(text);
-    }
+
+    state.forEach((item, index) => {
+      const decoded = decodeURIComponent(item);
+      const text = formatItem ? formatItem(decoded) : decoded;
+      console.log(chalk.gray(index + '.'), text);
+    })
+
     if (state.length === 0) {
-      console.log("(empty list)");
+      console.log("(empty)");
     }
   } else {
     if (state !== undefined) {
@@ -85,16 +86,18 @@ function show(k, formatItem, items) {
   }
   console.log();
 
+  console.groupEnd();
+
   if (!items) {
     process.exit();
   }
 }
 
-function add(listName, item) {
+function add(listName, item, unique = false) {
   const encoded = encodeURIComponent(item.replace(/\\\\/g, "\\"));
 
   const items = store.get(listName) || [];
-  if (items.includes(encoded)) {
+  if (unique && items.includes(encoded)) {
     console.log(chalk.bgYellow.black("Already exists:"), item);
     process.exit();
   }

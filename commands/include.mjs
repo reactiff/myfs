@@ -30,9 +30,10 @@ export const options = {
 export const help = `Manage included file patterns (globs)`;
 export const group = 'Settings';
 
-export async function execute(args, argv, resolve, fsitem) {
-
+export async function execute(context) {
   try {
+
+    const { argv } = context;
 
     if (argv.A||argv.add) {
       store.add('include', argv.A||argv.add);
@@ -57,8 +58,7 @@ export async function execute(args, argv, resolve, fsitem) {
     }
 
     store.show('include', (item) => decodeURIComponent(item));
-
-    resolve();
+    
   } catch (ex) {
     throw new Error(ex.message);
   }
