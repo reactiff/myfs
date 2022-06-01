@@ -32,6 +32,10 @@ export function loadCommand(context) {
 
 export async function parseCommandContext(parentContext, depth, args) {
         
+    // TODO
+
+    // If command has positional arguments then it is the tail command
+
     const tracer = new Tracer('parseCommandContext').enter();
 
     const pctx = parentContext;
@@ -103,9 +107,7 @@ export async function parseCommandContext(parentContext, depth, args) {
         };
     }
     
-    debugger
-    context.module = commandLoader.load(context.command, context);
-      
+    context.module = await commandLoader.load(context.command, context);
 
     // load available commands for the context
     // const isRootCommand = context.tail === undefined && context.commandName === 'fs';

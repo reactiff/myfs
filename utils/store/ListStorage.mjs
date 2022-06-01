@@ -64,9 +64,9 @@ export class ListStorage extends StorageBase {
 
   getAvailableCommands() {
       return {
-          add: { command: 'add', arguments: '<item>', help: `Add ${this.itemName} to the list`, options: {}, group: '', [Symbol.for('type')]: 'module', },
-          delete: { command: 'delete', arguments: '<item>', help: `Delete ${this.itemName} from the list`, options: {}, group: '', [Symbol.for('type')]: 'module', },
-          clear: { command: 'clear', help: `Delete all ${this.itemName}s`, options: {}, group: '', [Symbol.for('type')]: 'module', },
+          add: { command: 'add <item>', name: 'add', arguments: '<item>', help: `Add ${this.itemName} to the list`, options: {}, group: '', [Symbol.for('type')]: 'module', },
+          delete: { command: 'delete <item>', name: 'delete', arguments: '<item>', help: `Delete ${this.itemName} from the list`, options: {}, group: '', [Symbol.for('type')]: 'module', },
+          clear: { command: 'clear', name: 'clear', help: `Delete all ${this.itemName}s`, options: {}, group: '', [Symbol.for('type')]: 'module', },
       };
   }
 }

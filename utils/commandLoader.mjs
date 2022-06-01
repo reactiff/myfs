@@ -9,12 +9,12 @@ function load(command, context) {
     // it shoud work because of workspaces
     import(command.pathFromRoot)
       .then(m => {
+        
         const fsitem = createFsItem(command);
         resolve(
           createCommandModule({ 
             context,
             m, 
-            name: fsitem.moduleName, 
             fsitem 
           })
         );
@@ -34,14 +34,13 @@ function createFsItem(command) {
   });
 }
 
-function createCommandModule({ context, m, name, fsitem }) {
+function createCommandModule({ context, m, fsitem }) {
 
-  const command = (m.command || name).trim();
+  const command = (m.command || fsitem.moduleName).trim();
   const spacePos = command.indexOf(' ');
-  const cmdName = command.slice(0, spacePos);
-  const cmdArgs = spacePos >= 0 
-    ? command.slice(spacePos)
-    : '';
+  const [ cmdName, cmdArgs ] = spacePos >= 0 
+    ? [ command.slice(0, spacePos), command.slice(spacePos) ]
+    : [ command, '' ];
 
   return {
     command,
@@ -53,7 +52,7 @@ function createCommandModule({ context, m, name, fsitem }) {
     getNextCommand: m.getNextCommand,
     getAvailableCommands: m.getAvailableCommands,
     // yargs calls handler
-    handler: commandHandler({ context, m, name, fsitem }),
+    handler: commandHandler({ context, m, fsitem }),
   };
 }
 

@@ -22,6 +22,7 @@ export async function nextCommand(currentContext, depth, initArgs) {
     return;
   }
 
+  
   // if command is not tail, call nextCommand recursively.
   if (context.tail !== undefined && context.commandName !== context.tail) {
     debugger;
@@ -37,12 +38,16 @@ export async function nextCommand(currentContext, depth, initArgs) {
     return;
   }
 
-  // call commandHandler (in commandLoader.mjs)
+  
   const args = context.args.length > 0 ? context.args.slice(context.depth) : ["fs"];
   
   const m = context.module;
 
   try {
+    
+    // Args first token must be the command name in context
+    // This will call commandHandler (in commandLoader.mjs) and subsequently execute() on command module
+
     yargs(args)
       .command(m)
       .describe(remap(m.options, {

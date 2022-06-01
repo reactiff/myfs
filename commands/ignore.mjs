@@ -23,6 +23,7 @@ export const getNextCommand = (ctx) => {
 }
 
 export const getAvailableCommands = (ctx) => {
+  debugger
   return store.getAvailableCommands(ctx);
 }
 
@@ -32,6 +33,12 @@ export async function execute(context) {
 
     const { argv } = context;
     
+    if (argv.show) {
+      debugger
+      store.show('Ignore List');
+      return;
+    }
+
     return ShowHelp;
 
   } catch (ex) {
