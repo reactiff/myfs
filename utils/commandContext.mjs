@@ -30,7 +30,7 @@ export function loadCommand(context) {
     }
 }
 
-export function parseCommandContext(parentContext, depth, args) {
+export async function parseCommandContext(parentContext, depth, args) {
         
     const tracer = new Tracer('parseCommandContext').enter();
 
@@ -50,9 +50,8 @@ export function parseCommandContext(parentContext, depth, args) {
       tail: undefined,
       flags: {},
       error: undefined,
-      loadModule() { 
-        return commandLoader.load(context.command, context);
-      }, 
+      module: undefined,
+      
       getAvailableCommands(module) {
         if (module && module.getAvailableCommands) {
             return module.getAvailableCommands(context);
@@ -104,6 +103,10 @@ export function parseCommandContext(parentContext, depth, args) {
         };
     }
     
+    debugger
+    context.module = commandLoader.load(context.command, context);
+      
+
     // load available commands for the context
     // const isRootCommand = context.tail === undefined && context.commandName === 'fs';
     // const isTailCommand = context.tail !== undefined && context.commandName === context.tail

@@ -6,14 +6,14 @@ import { printHelp } from "./help.mjs";
 import chalk from "chalk";
 import { Tracer } from "./Tracer.mjs";
 
-export async function nextCommand(currentContext, depth, args) {
+export async function nextCommand(currentContext, depth, initArgs) {
   const d = currentContext ? currentContext.depth : depth;
-  const cmdName = currentContext ? currentContext.args[d] : args[d];
+  const cmdName = currentContext ? currentContext.args[d] : initArgs[d];
 
   const tracer = new Tracer(cmdName).enter();
 
   // parse context
-  const context = await parseCommandContext(currentContext, depth, args);
+  const context = await parseCommandContext(currentContext, depth, initArgs);
 
   // is there a command?
   if (!context.command) {
@@ -40,6 +40,8 @@ export async function nextCommand(currentContext, depth, args) {
   // call commandHandler (in commandLoader.mjs)
   const args = context.args.length > 0 ? context.args.slice(context.depth) : ["fs"];
   
+  const m = context.module;
+
   try {
     yargs(args)
       .command(m)
@@ -49,14 +51,15 @@ export async function nextCommand(currentContext, depth, args) {
       }))
       .argv;
   } catch (ex) {
+    console.log(ex);
     debugger;
   }
 
   // bootstrap command module
-  context
-    .loadModule()
-    .then((m) => {})
-    .catch((err) => {
-      inspectErrorStack(err);
-    });
+  // context
+  //   .loadModule()
+  //   .then((m) => {})
+  //   .catch((err) => {
+  //     inspectErrorStack(err);
+  //   });
 }
