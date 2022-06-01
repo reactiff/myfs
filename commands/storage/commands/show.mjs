@@ -6,14 +6,17 @@ import boxen from "boxen";
 import chalk from "chalk";
 
 // COMMAND MODULE PROPS
-export const help = `Show storage content`;
+export const command = "show [keys..]"
+export const desc = `Show storage content`;
 export const group = "";
 export const options = {};
 
 export async function execute(context) {
   try {
     const { args, argv, depth } = context;
-    const cmdLineParams = args.slice(depth + 1);
+    
+    debugger
+    const cmdLineParams = argv.keys;
 
     if (cmdLineParams.length > 1) {
       cmdLineParams.forEach((k) => {
@@ -21,6 +24,8 @@ export async function execute(context) {
       });
       return;
     }
+
+    // CONTINUED FROM HERE WHEN KEYS ARE NOT PROVIDED
     
     const entries = Object.entries(store.all);
     const data = entries.map((kv) => ({

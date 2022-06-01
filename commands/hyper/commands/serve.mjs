@@ -4,7 +4,7 @@ import path from 'path';
 import myfs from "utils/myfs.mjs";
 
 // COMMAND MODULE PROPS
-export const help = `Serve a virtual Web App using schema.*.json configuration`;
+export const desc = `Serve a virtual Web App using schema.*.json configuration`;
 export const group = 'Web Apps';
 
 export async function execute(context) {

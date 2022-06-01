@@ -1,7 +1,7 @@
 import { ShowHelp } from "utils/help.mjs";
 
 // COMMAND MODULE PROPS
-export const help = `fs`;
+export const desc = `fs`;
 export const group = 'Root';
 
 export async function execute(context) {

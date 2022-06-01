@@ -124,7 +124,7 @@ function remove(listName, item) {
   show(listName, (item) => decodeURIComponent(item));
 }
 
-function rename(oldKey, newKey) {
+function rekey(oldKey, newKey) {
   if (!store.has(oldKey)) {
     console.log(chalk.bgYellow.black("Key does not exists:"), oldKey);
     process.exit();
@@ -136,6 +136,7 @@ function rename(oldKey, newKey) {
 
 export default {
   all: store.all,
+  has: store.has,
   get: store.get,
   set,
   revert,
@@ -144,5 +145,5 @@ export default {
   hist,
   add,
   remove,
-  rename,
+  rekey,
 };

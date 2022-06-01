@@ -13,7 +13,7 @@ import { execSync } from "child_process";
 import { promptInput } from "utils/promptInput.mjs";
 
 // COMMAND MODULE PROPS
-export const help = `Manual help description`;
+export const desc = `Manual help description`;
 export const group = 'Web Apps';
 
 class NodeSSHMock {}

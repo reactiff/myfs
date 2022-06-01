@@ -5,15 +5,18 @@ import remap from "./remap.mjs";
 import _ from "lodash";
 import { getLocalPackage } from 'utils/getLocalPackage.mjs';
 import boxen from "boxen";
+import { Tracer } from "./Tracer.mjs";
 
 export const ShowHelp = Symbol.for('ShowHelp');
 
 export async function printHelp(module, fsItem, context) {
 
+    const tracer = new Tracer('printHelp').enter();
+
     const cmdCharOffset = (' > fs ' + context.commandTokens.join(' ')).length - 1;
 
     await printHeader(module, fsItem, context);
-    await printAvailableCommands(context, cmdCharOffset);
+    await printAvailableCommands(module, context, cmdCharOffset);
     await printAvailableOptions(module, fsItem, context);
     await printFooter(module, fsItem, context);
 }
@@ -26,8 +29,8 @@ async function printHeader(module, fsItem, context) {
         console.log(chalk.red(context.error.message), '\n');
     }
 
-    if (module && module.help && context.help) {
-        console.log(boxen(module.help));
+    if (module && module.desc && context.flags.help) {
+        console.log(boxen(module.desc));
         console.log();
     }
 
@@ -82,12 +85,14 @@ async function printAvailableOptions(module, fsItem, context) {
     
 }
 
-async function printAvailableCommands(context, cmdCharOffset) {
+async function printAvailableCommands(module, context, cmdCharOffset) {
+
+    const commands = context.getAvailableCommands(module);
     const modules = await Promise.all(
-        Object.values(context.commands)
-            .map(c => {
-                return commandLoader.load(c, context);
-            })
+        Object.values(commands).map(c => {
+            if (c[Symbol.for('type')] === 'module') return c;
+            return commandLoader.load(c, context);
+        })
     ).catch((reason) => console.error(reason.message || reason));
 
     const groupOrder = {
@@ -103,10 +108,16 @@ async function printAvailableCommands(context, cmdCharOffset) {
         [g => groupOrder[g] || 1]
     );
 
-    const prefix = '\u0020'.repeat(cmdCharOffset);
-
+    // const prefix = '\u0020'.repeat(cmdCharOffset);
     console.log('\u0020'.repeat(cmdCharOffset + 1), chalk.gray('\u2193'));
 
+    // calculate maximum length for each printed column
+    const colWidth = { 
+        cmdName: modules.reduce((longest, m) => Math.max(longest, m.name.length), 0),
+        arguments: modules.reduce((longest, m) => Math.max(longest, (m.arguments||'').length), 0),
+        options: modules.reduce((longest, m) => Math.max(longest, (m.options||'').length), 0),
+    };
+        
     console.group();
 
     for (let g of groups) {
@@ -114,7 +125,8 @@ async function printAvailableCommands(context, cmdCharOffset) {
         const data = modules
             .filter(m => m.group === g)
             .map(m => ({
-                command: prefix + chalk.yellow(m.command.padEnd(10, ' ')),
+                command: chalk.yellow(m.name.padEnd(colWidth.cmdName, ' ')),
+                arguments: m.arguments ? chalk.gray(m.arguments.padEnd(colWidth.arguments, ' ')) : '',
                 options: Object.values(m.options || {}).map(o => {
                     return [
                         '--',

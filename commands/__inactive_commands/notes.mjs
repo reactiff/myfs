@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 // COMMAND MODULE PROPS
-export const help = `Manage Notes`;
+export const desc = `Manage Notes`;
 export const group = 'Notes';
 
 export async function execute(context) {

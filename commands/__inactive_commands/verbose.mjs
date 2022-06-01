@@ -2,7 +2,7 @@ import store from "utils/store/index.mjs";
 import chalk from "chalk";
 
 // COMMAND MODULE PROPS
-export const help = `Toggle verbosity`;
+export const desc = `Toggle verbosity`;
 export const group = 'Settings';
 
 export async function execute(context) {

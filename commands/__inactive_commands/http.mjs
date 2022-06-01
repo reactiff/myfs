@@ -1,7 +1,7 @@
 import { ShowHelp } from "utils/help.mjs";
 
 // COMMAND MODULE PROPS
-export const help = `Http namespace`;
+export const desc = `Http namespace`;
 export const group = 'Web Apps';
 
 export async function execute(context) {

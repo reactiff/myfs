@@ -1,7 +1,7 @@
 import store from "utils/store/index.mjs";
 
 // COMMAND MODULE PROPS
-export const help = `Store value by key`;
+export const desc = `Store value by key`;
 export const group = 'Settings';
 
 export async function execute(context) {

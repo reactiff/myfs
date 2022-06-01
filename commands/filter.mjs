@@ -1,7 +1,7 @@
 import { ShowHelp } from "utils/help.mjs";
 
 // COMMAND MODULE PROPS
-export const help = `fs filter lets you globally manage filter settings for searching files`;
+export const desc = `Globally manage filter settings for searching files`;
 export const group = 'Filtering';
 
 export const options = {

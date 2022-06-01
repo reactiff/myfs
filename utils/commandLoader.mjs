@@ -35,11 +35,20 @@ function createFsItem(command) {
 }
 
 function createCommandModule({ context, m, name, fsitem }) {
+
+  const command = (m.command || name).trim();
+  const spacePos = command.indexOf(' ');
+  const cmdName = command.slice(0, spacePos);
+  const cmdArgs = spacePos >= 0 
+    ? command.slice(spacePos)
+    : '';
+
   return {
-    command: name,
-    type: m.type,
+    command,
+    name: cmdName,
+    arguments: cmdArgs,
     options: m.options || {},
-    help: m.help,
+    help: m.desc,
     group: m.group,
     getNextCommand: m.getNextCommand,
     getAvailableCommands: m.getAvailableCommands,

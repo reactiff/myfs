@@ -28,7 +28,7 @@ export const options = {
 };
 
 // COMMAND MODULE PROPS
-export const help = `Working with lists`;
+export const desc = `Working with lists`;
 export const group = 'List Management';
 
 export async function execute(context) {

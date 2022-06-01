@@ -1,7 +1,7 @@
 import { ShowHelp } from "utils/help.mjs";
 
 // COMMAND MODULE PROPS
-export const help = `fs results: lets you work with results from the last ls command or your previously saved result set`;
+export const desc = `fs results: lets you work with results from the last ls command or your previously saved result set`;
 export const group = 'File Search Results';
 
 export const options = {

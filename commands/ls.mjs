@@ -8,7 +8,7 @@ import webbify from "hyperspace/webbify.mjs";
 
 // COMMAND MODULE PROPS
 export { options } from "./ls/options.mjs";
-export const help = `Search and manage files across directories`;
+export const desc = `Search and manage files across directories`;
 export const group = 'File Search';
 
 function print(results, scope) {

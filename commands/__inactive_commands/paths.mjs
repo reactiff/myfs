@@ -29,7 +29,7 @@ export const options = {
 };
 
 // COMMAND MODULE PROPS
-export const help = `Manage working paths`;
+export const desc = `Manage working paths`;
 export const group = 'Settings';
 
 export async function execute(context) {

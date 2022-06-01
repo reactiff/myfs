@@ -2,7 +2,7 @@ import store from "utils/store/index.mjs";
 import _ from 'lodash';
 
 // COMMAND MODULE PROPS
-export const help = `Get value by key`;
+export const desc = `Get value by key`;
 export const group = 'Settings';
 
 export async function execute(context) {

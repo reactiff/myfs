@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from "path";
 import commandLoader from "./commandLoader.mjs";
 import toDictionary from "./toDictionary.mjs";
+import { Tracer } from "./Tracer.mjs";
 
 function getPathToCurrentCommand(context)  {
     return context.commandName === 'fs' 
@@ -29,9 +30,10 @@ export function loadCommand(context) {
     }
 }
 
-const _validFlags = [ '--help' ];
 export function parseCommandContext(parentContext, depth, args) {
-    
+        
+    const tracer = new Tracer('parseCommandContext').enter();
+
     const pctx = parentContext;
 
     const context = {
@@ -51,6 +53,13 @@ export function parseCommandContext(parentContext, depth, args) {
       loadModule() { 
         return commandLoader.load(context.command, context);
       }, 
+      getAvailableCommands(module) {
+        if (module && module.getAvailableCommands) {
+            return module.getAvailableCommands(context);
+        } else {
+            return loadAvailableCommands(context)
+        }
+      }
     };
     
     context.flags.help = Boolean(context.args.includes('--help'));
@@ -96,20 +105,20 @@ export function parseCommandContext(parentContext, depth, args) {
     }
     
     // load available commands for the context
-    const isRootCommand = context.tail === undefined && context.commandName === 'fs';
-    const isTailCommand = context.tail !== undefined && context.commandName === context.tail
-    if (isRootCommand || isTailCommand) {
+    // const isRootCommand = context.tail === undefined && context.commandName === 'fs';
+    // const isTailCommand = context.tail !== undefined && context.commandName === context.tail
+    // if (isRootCommand || isTailCommand) {
 
-        if (pctx && pctx.command && pctx.command.getAvailableCommands) {
-            debugger
-            context.commands = pctx.command.getAvailableCommands(context);
-        } else {
-            context.commands = loadAvailableCommands(context)
-        }
+    //     if (pctx && pctx.command && pctx.command.getAvailableCommands) {
+    //         debugger
+    //         context.commands = pctx.command.getAvailableCommands(context);
+    //     } else {
+    //         context.commands = loadAvailableCommands(context)
+    //     }
         
-    }
+    // }
     
-    
+    tracer.exit();
 
     return context;
   }

@@ -16,10 +16,6 @@ chalk.level = 3;
 
 const args = hideBin(process.argv);
 
-nextCommand(null, 0, args)
-  .catch(err => {
-    inspectErrorStack(err);
-  })
-
-
-
+nextCommand(null, 0, args).catch((err) => {
+  inspectErrorStack(err);
+});

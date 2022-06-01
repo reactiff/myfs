@@ -27,7 +27,7 @@ export const options = {
 };
 
 // COMMAND MODULE PROPS
-export const help = `Manage included file patterns (globs)`;
+export const desc = `Manage included file patterns (globs)`;
 export const group = 'Settings';
 
 export async function execute(context) {

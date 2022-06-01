@@ -12,7 +12,7 @@ export const options = {
 };
 
 // COMMAND MODULE PROPS
-export const help = `Manage excluded file patterns (globs)`;
+export const desc = `Manage ignored file/path patterns (globs)`;
 export const group = 'Filtering';
 
 const store = new GlobListStorage(StorageKeys.ExcludedGlobs);
@@ -23,15 +23,12 @@ export const getNextCommand = (ctx) => {
 }
 
 export const getAvailableCommands = (ctx) => {
-  debugger
   return store.getAvailableCommands(ctx);
 }
 
 
 export async function execute(context) {
   try {
-
-    debugger
 
     const { argv } = context;
     

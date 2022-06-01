@@ -1,5 +1,5 @@
 // COMMAND MODULE PROPS
-export const help = `Hyper Apps`;
+export const desc = `Hyper Apps`;
 export const group = 'Web Apps';
 
 export async function execute(context) {
