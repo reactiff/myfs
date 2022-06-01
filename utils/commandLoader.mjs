@@ -41,6 +41,8 @@ function createCommandModule({ context, m, name, fsitem }) {
     options: m.options || {},
     help: m.help,
     group: m.group,
+    getNextCommand: m.getNextCommand,
+    getAvailableCommands: m.getAvailableCommands,
     // yargs calls handler
     handler: commandHandler({ context, m, name, fsitem }),
   };

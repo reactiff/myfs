@@ -8,8 +8,6 @@ export async function execute(context) {
   try {
 
     const { argv } = context;
-        
-    debugger
     
     return ShowHelp;
 

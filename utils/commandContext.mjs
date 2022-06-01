@@ -4,22 +4,27 @@ import path from "path";
 import commandLoader from "./commandLoader.mjs";
 import toDictionary from "./toDictionary.mjs";
 
-export function loadAvailableCommands(context) {
-    const pathToSubsommands = context.commandName === 'fs' 
+function getPathToCurrentCommand(context)  {
+    return context.commandName === 'fs' 
         ? context.currentPath
         : path.join(context.currentPath, context.commandName, 'commands');
+}
 
-    const allFiles = commandLoader.getFiles(pathToSubsommands);
+function getPathToNextCommands(context)  {
+    return context.commandName === 'fs' 
+        ? context.currentPath
+        : path.join(context.currentPath, context.commandName, 'commands');
+}
+
+export function loadAvailableCommands(context) {
+    const p = getPathToNextCommands(context);
+    const allFiles = commandLoader.getFiles(p);
     const commands = toDictionary(allFiles, (cmd) => cmd.name);
     return commands;
 }
 
 export function loadCommand(context) {
-    const filePath = path.join(
-        context.currentPath, 
-        context.commandName + '.mjs'
-    );
-    if (fs.existsSync(filePath)) {
+    if (fs.existsSync(path.join(context.currentPath, context.commandName + '.mjs'))) {
         return commandLoader.getFile(context.currentPath, context.commandName);
     }
 }
@@ -27,14 +32,18 @@ export function loadCommand(context) {
 const _validFlags = [ '--help' ];
 export function parseCommandContext(parentContext, depth, args) {
     
+    const pctx = parentContext;
+
     const context = {
-      depth,
-      args: args || parentContext.args,
-      commandTokens: [],
+      depth: pctx ? pctx.depth + 1 : depth,
+      args: pctx ? pctx.args : args,
+      commandTokens: pctx ? pctx.commandTokens : [],
+      parentCommand: pctx ? pctx.command : undefined,
+      // 
+      argv: undefined, // will be merged by handler
       currentPath: path.resolve('commands'),
       commandName: undefined,
       command: undefined,
-      parentCommand: undefined,
       commands: {},
       tail: undefined,
       flags: {},
@@ -42,7 +51,6 @@ export function parseCommandContext(parentContext, depth, args) {
       loadModule() { 
         return commandLoader.load(context.command, context);
       }, 
-      argv: undefined, // will be merged by handler
     };
     
     context.flags.help = Boolean(context.args.includes('--help'));
@@ -62,10 +70,25 @@ export function parseCommandContext(parentContext, depth, args) {
 
     // get current command name
     context.commandName = context.commandTokens.length > 0 
-        ? context.commandTokens[depth]
+        ? context.commandTokens[context.depth]
         : 'fs'; // root  command
 
-    context.command = loadCommand(context);
+    
+    // update current path before loading command files
+    if (pctx) {
+        context.currentPath = path.join(pctx.currentPath, pctx.commandName, 'commands');
+    }
+
+    // if the parent command can provide the command handler, use that.
+    // this is how standard subcommands can be implemented for things 
+    // like Lists that use the same set of subcommands
+    if (pctx && pctx.command && pctx.command.getNextCommand) {
+        debugger
+        context.command = pctx.command.getNextCommand(context);
+    } else {
+        context.command = loadCommand(context);
+    }
+    
     if (!context.command) {
         context.error = { 
             message: 'Invalid command: ' + context.commandName 
@@ -76,18 +99,17 @@ export function parseCommandContext(parentContext, depth, args) {
     const isRootCommand = context.tail === undefined && context.commandName === 'fs';
     const isTailCommand = context.tail !== undefined && context.commandName === context.tail
     if (isRootCommand || isTailCommand) {
-        context.commands = loadAvailableCommands(context)
+
+        if (pctx && pctx.command && pctx.command.getAvailableCommands) {
+            debugger
+            context.commands = pctx.command.getAvailableCommands(context);
+        } else {
+            context.commands = loadAvailableCommands(context)
+        }
+        
     }
     
-    if (parentContext) {
-        context.depth = parentContext.depth + 1;
-        context.commandTokens = parentContext.commandTokens;
-        context.parentCommand = parentContext.command;
-        context.currentPath = path.join(
-            parentContext.currentPath, 
-            context.commandName
-        );
-    }
+    
 
     return context;
   }

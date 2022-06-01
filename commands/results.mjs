@@ -1,16 +1,16 @@
 import { ShowHelp } from "utils/help.mjs";
 
 // COMMAND MODULE PROPS
-export const help = `fs filter lets you globally manage filter settings for searching files`;
-export const group = 'Filtering';
+export const help = `fs results: lets you work with results from the last ls command or your previously saved result set`;
+export const group = 'File Search Results';
 
 export const options = {
-  'O': {
-    alias: 'some-feature',
-    description: 'Enables some feature',
+  'S': {
+    alias: 'summary',
+    description: 'Display a high level summary of the results with stats',
     type: 'boolean',
   },
-  
+ 
 };
 
 export async function execute(context) {

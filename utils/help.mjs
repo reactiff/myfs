@@ -31,8 +31,6 @@ async function printHeader(module, fsItem, context) {
         console.log();
     }
 
-    
-
     const tokens = context.commandTokens.map(t => {
         if (t === context.commandName && context.error) return chalk.red(t);
         if (t === context.commandName) {
@@ -60,7 +58,7 @@ async function printAvailableOptions(module, fsItem, context) {
     if (!module) return;
     if (module.options) {
 
-        console.log(chalk.white('Flags'), '\n');
+        // console.log(chalk.white('Flags'), '\n');
 
         console.group();
 
@@ -93,11 +91,10 @@ async function printAvailableCommands(context, cmdCharOffset) {
     ).catch((reason) => console.error(reason.message || reason));
 
     const groupOrder = {
-        'File System': 0,
-        'List Management': 1,
-        'Notes': 2,
-        'Web Apps': 3,
-        'Settings': 999
+        'File Search': 0,
+        'File Search Results': 1,
+        'Filtering': 2,
+        'Utils': 3,
     };
 
     const groupSet = new Set(modules.filter(m => m.group !== 'Root').map(m => m.group));
@@ -109,6 +106,8 @@ async function printAvailableCommands(context, cmdCharOffset) {
     const prefix = '\u0020'.repeat(cmdCharOffset);
 
     console.log('\u0020'.repeat(cmdCharOffset + 1), chalk.gray('\u2193'));
+
+    console.group();
 
     for (let g of groups) {
 
@@ -128,4 +127,6 @@ async function printAvailableCommands(context, cmdCharOffset) {
         console.log(columnify(data, { showHeaders: false }));
         console.log();
     }
+
+    console.groupEnd();
 }

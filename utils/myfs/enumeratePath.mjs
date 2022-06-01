@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import fsItem from './fsItem.mjs';
 import minimatch from 'minimatch';
-import { GlobListStorage } from '../store/list.mjs';
+import { GlobListStorage } from '../store/ListStorage.mjs';
 import { StorageKeys } from '../store/StorageKeys.mjs';
 
 

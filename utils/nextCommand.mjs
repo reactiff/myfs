@@ -7,8 +7,17 @@ import { printHelp } from "./help.mjs";
 export function nextCommand(currentContext, depth, args) {
   return new Promise((resolve, reject) => {
 
+    // if (currentContext && currentContext.commandName === 'storage') {
+    //   debugger
+    // }
+
     // parse context
     const context = parseCommandContext(currentContext, depth, args);
+        
+    // console.log(context.depth, context.currentPath, context.command);
+    // if (context.error && context.error.message) {
+    //   console.error(context.error.message);
+    // }
     
     // is there a command?
     if (!context.command) {
@@ -16,9 +25,21 @@ export function nextCommand(currentContext, depth, args) {
       return resolve(false);
     }
 
+    
+
     // if command is not tail, call nextCommand recursively.
     if (context.tail !== undefined && context.commandName !== context.tail) {
-      nextCommand(context)
+
+      debugger
+
+
+
+      const subcontext = { 
+        ...context,
+        getNextCommand: context.command.getNextCommand,
+      };
+      
+      nextCommand(subcontext)
         .then(x => {
           debugger
           resolve(x)
