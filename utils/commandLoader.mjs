@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import fs from "fs";
 import path from "path";
 import { ShowHelp, printHelp } from "./help.mjs";
@@ -7,6 +8,9 @@ import FSItem from "./myfs/fsItem.mjs";
 function load(command, context) {
   return new Promise(resolve => {
     // it shoud work because of workspaces
+
+    if (!command) debugger
+    
     import(command.pathFromRoot)
       .then(m => {
         

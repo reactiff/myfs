@@ -16,7 +16,6 @@ export function printResults(fsItems, options) {
 
   let cnt = 1;
 
-  console.log(global.__basedir);
 
   fsItems.items.forEach((f) => {
     if (colDefs.length) {
@@ -170,6 +169,6 @@ function getColDefs(fsItems, options) {
 function printColHeaders(colDefs, options) {
   const headers = [...colDefs.map((cd) => cd.name.padEnd(cd.length, " "))];
   console.log(...headers);
-  const dashes = [...colDefs.map((cd) => "-".repeat(cd.length))];
+  const dashes = [...colDefs.map((cd) => chalk.gray("-".repeat(cd.length)))];
   console.log(...dashes);
 }

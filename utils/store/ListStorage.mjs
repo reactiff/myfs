@@ -1,8 +1,6 @@
 import _ from "lodash";
 import store from "./index.mjs";
-import path from "path";
 import chalk from "chalk";
-import fs from "fs";
 import boxen from "boxen";
 import { StorageBase } from "./StorageBase.mjs";
 import { ShowHelp } from "../help.mjs";
@@ -71,63 +69,38 @@ export class ListStorage extends StorageBase {
   }
 }
 
-async function getAddHandler(storage, depth, ctx) {
+function getAddHandler(storage, depth, ctx) {
+  return async () => {
     debugger
     const tokens = ctx.argv._.slice(depth);
     if (tokens.length === 0) return ShowHelp;
     for (let t of tokens) {
         storage.add(t);
     }
+  }
 }
 
 
-async function getDeleteHandler(storage, depth, ctx) {
+function getDeleteHandler(storage, depth, ctx) {
+
+  return async () => {
     debugger
     const tokens = ctx.argv._.slice(depth);
     if (tokens.length === 0) return ShowHelp;
     for (let t of tokens) {
         storage.delete(t);
     }
+  }
 }
 
 
-async function getClearHandler(storage, depth, ctx) {
+function getClearHandler(storage, depth, ctx) {
+
+  return async () => {
     debugger
     storage.clear();
-}
-
-
-/** Do not pass strings to Storage constructors!  Use storageKeys dictionary. */
-export class PathListStorage extends ListStorage {
-  constructor(uniqueKey) {
-    super(uniqueKey, "path", true);
-  }
-
-  add(value) {
-    // done
-
-    const pathToAdd = path.resolve(value);
-
-    if (!fs.existsSync(pathToAdd)) {
-      console.error(chalk.red("Invalid path: "), pathToAdd);
-      return;
-    }
-
-    super.add(pathToAdd, true);
-  }
-
-  delete(value) {
-    super.delete(value);
-  }
-
-  clear() {
-    super.clear();
   }
 }
 
-/** Do not pass strings to Storage constructors!  Use storageKeys dictionary. */
-export class GlobListStorage extends ListStorage {
-  constructor(uniqueKey) {
-    super(uniqueKey, "glob", true);
-  }
-}
+
+

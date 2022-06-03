@@ -47,7 +47,7 @@ export async function parseCommandContext(parentContext, depth, args) {
       parentCommand: pctx ? pctx.command : undefined,
       // 
       argv: undefined, // will be merged by handler
-      currentPath: path.resolve('commands'),
+      currentPath: path.resolve(global.__basedir, 'commands'),
       commandName: undefined,
       command: undefined,
       commands: {},
