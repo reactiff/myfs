@@ -3,17 +3,9 @@ import { ShowHelp } from 'utils/help.mjs';
 import { GlobListStorage } from "utils/store/GlobListStorage.mjs";
 import { StorageKeys } from "utils/store/StorageKeys.mjs";
 
-export const options = {
-  'S': {
-    alias: 'show',
-    description: 'Show ignore list',
-    type: 'boolean',
-  },
-};
-
 // COMMAND MODULE PROPS
 export const desc = `Manage ignored file/path patterns (globs)`;
-export const group = 'Filtering';
+export const group = '';
 
 const store = new GlobListStorage(StorageKeys.ExcludedGlobs);
 
@@ -27,17 +19,10 @@ export const getAvailableCommands = (ctx) => {
   return store.getAvailableCommands(ctx);
 }
 
-
 export async function execute(context) {
   try {
 
     const { argv } = context;
-    
-    if (argv.show) {
-      debugger
-      store.show('Ignore List');
-      return;
-    }
 
     return ShowHelp;
 

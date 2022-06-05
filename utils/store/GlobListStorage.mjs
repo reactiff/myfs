@@ -1,4 +1,4 @@
-import { ListStorage } from "./ListStorage";
+import { ListStorage } from "./ListStorage.mjs";
 
 /** Do not pass strings to Storage constructors!  Use storageKeys dictionary. */
 
