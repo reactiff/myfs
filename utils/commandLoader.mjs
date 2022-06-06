@@ -43,12 +43,13 @@ function createCommandModule({ context, m, fsitem }) {
   const command = (m.command || fsitem.moduleName).trim();
   const spacePos = command.indexOf(' ');
   const [ cmdName, cmdArgs ] = spacePos >= 0 
-    ? [ command.slice(0, spacePos), command.slice(spacePos) ]
+    ? [ command.slice(0, spacePos), command.slice(spacePos).trim() ]
     : [ command, '' ];
 
   return {
     command,
     name: cmdName,
+    hasArguments: cmdArgs.length > 0,
     arguments: cmdArgs,
     options: m.options || {},
     help: m.desc,

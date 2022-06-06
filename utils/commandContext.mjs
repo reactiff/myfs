@@ -65,32 +65,18 @@ export async function parseCommandContext(parentContext, depth, args) {
       }
     };
     
-    context.flags.help = Boolean(context.args.includes('--help'));
-
-    // collect command tokens (up to first flag)
-    if (args) {
-        for (let token of args) {
-            if (token.startsWith('-')) break;
-            context.commandTokens.push(token);
-        }
-    }
-    
-    // get the tail (last command)
-    context.tail =  context.commandTokens.length > 0 
-        ? context.commandTokens[context.commandTokens.length - 1] 
-        : undefined;
-
     // get current command name
-    context.commandName = context.commandTokens.length > 0 
-        ? context.commandTokens[context.depth]
+    context.commandName = context.args.length > 0 
+        ? context.args[context.depth]
         : 'fs'; // root  command
 
-    
+
     // update current path before loading command files
     if (pctx) {
         context.currentPath = path.join(pctx.currentPath, pctx.commandName, 'commands');
     }
 
+    
     // if the parent command can provide the command handler, use that.
     // this is how standard subcommands can be implemented for things 
     // like Lists that use the same set of subcommands
@@ -100,14 +86,34 @@ export async function parseCommandContext(parentContext, depth, args) {
     } else {
         context.command = loadCommand(context);
     }
+    if (!context.command) context.error = { message: 'Invalid command: ' + context.commandName };
     
-    if (!context.command) {
-        context.error = { 
-            message: 'Invalid command: ' + context.commandName 
-        };
+    debugger
+
+    // load command module
+    context.module = await commandLoader.load(context.command, context);
+
+    context.flags.help = Boolean(context.args.includes('--help'));
+
+    // collect command tokens (up to first flag)
+    if (args) {
+        for (let i = 0; i < args.length; i++) {
+            const token = args[i] 
+            // break if found an option switch
+            if (token.startsWith('-')) break;
+            // break current command has arguments and the token index is greater than current command index (depth)
+            if (context.module.hasArguments && i > context.depth) break;
+            context.commandTokens.push(token);
+        }
     }
     
-    context.module = await commandLoader.load(context.command, context);
+    // get the tail (last command)
+    context.tail =  context.commandTokens.length > 0 
+        ? context.commandTokens[context.commandTokens.length - 1] 
+        : undefined;
+
+    
+
 
     // load available commands for the context
     // const isRootCommand = context.tail === undefined && context.commandName === 'fs';

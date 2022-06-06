@@ -182,7 +182,9 @@ class myfs {
         }
         
         if (!this.options.search) {
-            items = this.sortOrder ? items.sort(this.sortOrder) : items;
+            if (this.sortOrder) {
+                items.sort(this.sortOrder)
+            }
         }
         
         return new myfs(items, search, this);

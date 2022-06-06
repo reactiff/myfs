@@ -3,8 +3,10 @@ import _ from "lodash";
 const reFunction = /\([[:alnum:]]+?,\s*?[[:alnum:]]+?\)\s*?=>.+/;
 
 const sortFilesByStringAttr = (attr) => (a, b) => {
-  if (a[attr] < b[attr]) return -1;
-  if (a[attr] > b[attr]) return 1;
+  const astr = (a[attr]||'').toLowerCase();
+  const bstr = (b[attr]||'').toLowerCase();
+  if (astr < bstr) return -1;
+  if (astr > bstr) return 1;
   return 0;
 };
 

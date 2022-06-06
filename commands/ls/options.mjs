@@ -5,6 +5,12 @@ export const options = {
     type: "string",
     default: "mtime",
   },
+  S: {
+    alias: "summary",
+    description: "Display summary of listed files",
+    type: "string",
+    default: "mtime",
+  },
   // D: {
   //   alias: "dirs",
   //   description: "Show directories only",
@@ -24,7 +30,7 @@ export const options = {
   // },
   R: {
     alias: "recursive",
-    description: "search all sub-dirs. Default TRUE.",
+    description: "Recursively search all sub directories. (Default is TRUE)",
     type: "boolean",
     default: true,
   },
@@ -33,7 +39,7 @@ export const options = {
     description: "Path pattern to match",
     type: "string",
   },
-  S: {
+  s: {
     alias: "search",
     description: "Search inside files for pattern",
     type: "string",
