@@ -9,10 +9,12 @@ import { StorageKeys } from '../store/StorageKeys.mjs';
 const ignoredGlobStorage = new GlobListStorage(StorageKeys.IgnoredGlobs);
 const ignoredGlobs = ignoredGlobStorage.getAll();
 
-export function enumeratePath(p, options, search) {
+export function enumeratePath(p, myfs) {
     
+    const { options, search } = myfs;
+
     const dirItems = fs.readdirSync(p);
-    fs.is
+    
     let fsItems = dirItems.reduce((allItems, item) => {
 
         let fullPath = path.join(p, item);
@@ -37,12 +39,13 @@ export function enumeratePath(p, options, search) {
         if (stat.isDirectory() && options.recursive) {
             // DIRECTORY
             // fullPath = path.join(fullPath, "/");
-            const items = enumeratePath(fullPath, options, search);
+            const items = enumeratePath(fullPath, myfs);
             return allItems.concat(items);
         } else {
             // FILE
             allItems.push(
                 new fsItem({ 
+                    myfs,
                     path: p, 
                     name: item,
                     moduleName: item.replace(/\.mjs$/, ''),

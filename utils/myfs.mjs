@@ -17,9 +17,12 @@ import Search from './Search.mjs';
 class myfs {
 
     items;
+    protocolHandlers = {};
 
-    constructor(items, search, oldCopy) {
+    constructor(options /*items, search, oldCopy*/) {
         
+        this.options = options;
+
         // inject split methods
         Object.assign(this, { 
             resolvePath,
@@ -27,55 +30,6 @@ class myfs {
             open,
         });
 
-        this.protocolHandlers = oldCopy ? oldCopy.protocolHandlers || {} : {};
-
-        if (!items) return;
-
-        const _this = this;
-        this.items = items;
-
-        if (!search) return;
-                
-        if (!search.results) search.results = [];
-        if (!search.startedCount) search.startedCount = 0;
-        if (!search.finishedCount) search.finishedCount = 0;
-        if (!search.progress) search.progress = 0;    
-        this.search = search;
-                    
-        const cnt = items.length;
-        for (let i = 0; i < cnt; i++) {
-            const fsi = items[i];
-            if (fsi.search && fsi.search.startTime === undefined) {
-                
-                fsi.onSearchComplete = ({ ok, matches, error }) => {
-
-                    search.finishedCount++;
-                    search.progress = search.finishedCount / search.startedCount;
-
-                    const result = {
-                        number: search.finishedCount,
-                        file: fsi,
-                        ok, 
-                        matches,
-                        error,
-                    };
-
-                    search.results.push(result);
-
-                    if (search.startedCount === search.finishedCount) {
-                        _this.notify('results-ready', { 
-                            items: search.results,
-                            progress: search.progress,
-                        });
-                    }
-                    
-                }
-
-                search.startedCount++;
-
-                fsi.search.start()
-            }
-        }
     }
 
     notify(protocol, e) {
@@ -107,122 +61,82 @@ class myfs {
     }
     
     ///////////////////////////////////
-    
-    options(options) {
-        this.options = options;
-        return this;
-    }
-
-    path(path) {
-        this.path = path;
-        return this;
-    }
-    
-    
-    files(pattern) {
-        this.filters = (this.filters || [])
-            .concat(
-                (item) => item.isFile() && (pattern ? pattern.test(item.name) : true)
-            );
-        return this;
-    }
-
-    directories() {
-        this.filters = (this.filters || [])
-            .concat(
-                item => !item.isFile()
-            );
-        return this;
-    }
-
-    filter(condition) {
-        this.filters = (this.filters || [])
-            .concat( condition );
-        return this;
-    }
-
-    sort(sorter) {
-        this.sortOrder = sorter;
-        return this;
         
+    toArray() {
+        return Array.from(this.items);
+    }
+
+    static execute(options) {
+        return new Promise((resolve, reject) => {
+            const instance = new myfs(options);
+            try {
+                instance.execute(resolve);
+            }
+            catch(ex) {
+                reject(ex);
+            }
+        })
     }
 
     execute(callback) {
 
         this.subscribe('results-ready', callback);
 
-        const search = new Search();
-
-        const p = this.path || path.resolve(process.cwd());
-        
-        let items = enumeratePath(p, this.options, search);
-                    
-        // Apply all filters, and reduce the number of items
-        if (this.filters) {
-            const _filters = this.filters;
-            items = items.filter(item => _filters.every(test => test(item)));
-        }
+        this.search = new Search();
+        this.path = path.resolve(process.cwd());
+        this.items = enumeratePath(this.path, this);
                  
         // If searching, then for every file, prepare the search
         if (this.options.find) {
-            for (let f of items) {
-                if (f.stat.isFile()) {
-                    f.prepareSearch(this.options);
-                }
-            }
+            return executeSearch(this);
         }
         
-        if (!this.options.find) {
-            if (this.sortOrder) {
-                items.sort(this.sortOrder)
-            }
+        if (this.options.sortOrder) {
+            items.sort(this.options.sortOrder)
         }
-        
-        if (!this.options.find) {
-            this.notify('results-ready', { 
-                items,
-                progress: 1,
-            });
-        }
-    }
-
-    toArray() {
-        return Array.from(this.items);
-    }
-
-
-    map(...args) {
-        // what does this do ???
-        return new myfs(this.items.map(...args), this.search, this);
-    }
-
-    
-    static match(glob) {
-        return new Promise((resolve, reject) => {
-
-            const dirPart = path.dirname(glob);
-            const filePart = path.basename(glob);
                 
-            const globber = readdirGlob(dirPart, {pattern: filePart});
-
-            const matches = [];
-            
-            globber.on('match', m => {
-                matches.push(path.resolve(m.absolute));
-            });
-            globber.on('error', err => {
-                console.error('fatal error', err);
-            });
-            globber.on('end', (m) => {
-                resolve(new myfs(matches));
-            });
+        this.notify('results-ready', { 
+            items,
+            progress: 1,
         });
     }
 
-    first() {
-        return new fsItem(this.items[0]);
-    }
+    
 
 }
 
 export default myfs;
+
+function executeSearch(_myfs) {
+    const files = _myfs.items.filter(f => f.stat.isFile());
+    files.forEach(f => f.createSearch(onSearchComplete))
+    files.forEach(f => f.executeSearch())
+}
+
+function onSearchComplete(fsi) {
+
+    const { myfs } = fsi;
+    const { ok, matches, error } = fsi.search;
+
+    myfs.search.finishedCount++;
+    myfs.search.progress = myfs.search.finishedCount / 
+                           myfs.search.startedCount;
+
+    const result = {
+        number: myfs.search.finishedCount,
+        file: fsi,
+        ok, 
+        matches,
+        error,
+    };
+
+    myfs.search.results.push(result);
+
+    if (myfs.search.startedCount === myfs.search.finishedCount) {
+        myfs.notify('results-ready', { 
+            items: myfs.search.results,
+            progress: myfs.search.progress
+        });
+    }
+    
+}

@@ -56,66 +56,72 @@ export default class fsItem {
         return this.stat.isFile();
     }
 
-    enumerate(options, context) {
-        return enumeratePath(this.fullPath, options, context);
+    enumerate() {
+        return enumeratePath(this.fullPath, this.myfs);
     }
     
     notify({ ok, matches }) {
         this.onSearchComplete({ ok, matches });
     }
 
-    prepareSearch(options) {
-        const _this = this;
+    createSearch(onSearchComplete) {
+        this.onSearchComplete = onSearchComplete;
+        this.search = createSearch(this);
+    }
 
-        const search = _this.search = {
-            options,
-            startTime: undefined,
-            endTime: undefined,
-            elapsed: undefined,
-            start() {
-                if (search.startTime !== undefined) {
-                    debugger
-                    return;
-                }
-                search.startTime = Date.now();
-
-                searchFile(_this.fullPath, search.options)
-                    .then(matches => {
-                        search.terminate(true);
-                        search.matches = matches,    
-                        _this.notify({ ok: true, matches });
-                    })
-                    .catch(error => {
-                        if (errorCount) return;
-                        errorCount++;
-                        inspectErrorStack(error);
-                        console.log( chalk.bgHex('#550000')(error.stack) );
-                        search.terminate(false, error);
-                        _this.notify({ ok: false, error });
-                    });
-            },
-            terminate(ok, error) {
-                if (error) {
-                    search.ok = false;
-                    search.error = error.message || error;
-                }
-                else {
-                    search.ok = ok;
-                }
-                search.endTime = Date.now();
-                search.elapsed = search.endTime - search.startTime;
-            },
-        };
+    executeSearch() {
+        this.search.start();
+        this.myfs.search.startedCount++;
     }
 }
 
+function createSearch(fsi) {
+    return {
+        startTime: undefined,
+        endTime: undefined,
+        elapsed: undefined,
 
-function searchFile(fullPath, options) {
+        start() {
+            const { search } = fsi;
+            if (search.startTime !== undefined) return;
+            search.startTime = Date.now();
+            searchFile(fsi)
+                .then(matches => {
+                    search.terminate(true);
+                    search.matches = matches,    
+                    fsi.onSearchComplete(fsi);
+                })
+                .catch(error => {
+                    if (errorCount) return;
+                    errorCount++;
+                    inspectErrorStack(error);
+                    console.log( chalk.bgHex('#550000')(error.stack) );
+                    search.terminate(false, error);
+                    fsi.onSearchComplete(fsi);
+                });
+        },
+
+        terminate(ok, error) {
+            const { search } = fsi;
+            if (error) {
+                search.ok = false;
+                search.error = error.message || error;
+            } else {
+                search.ok = ok;
+            }
+            search.endTime = Date.now();
+            search.elapsed = search.endTime - search.startTime;
+        },
+    };
+}
+
+function searchFile(fsi) {
     return new Promise((resolve, reject) => {
         try {
             if (errorCount) return;
-            const content = fs.readFileSync(path.resolve(fullPath), 'utf8');
-            const matches = [...content.matchAll(options.find)];
+            const content = fs.readFileSync(path.resolve(fsi.fullPath), 'utf8');
+            const pattern = fsi.myfs.options.find;
+            const matches = [...content.matchAll(pattern)];
             resolve(matches);
         } catch (err) {
             reject(err);

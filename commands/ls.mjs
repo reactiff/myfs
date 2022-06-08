@@ -54,17 +54,12 @@ export async function execute(context) {
   try {
 
     const opts = initOptions(context.argv);
-    const { dir } = opts;
-
-    const myfs = new MyFS()
-      .options(opts)
-      .path(dir)
-      .sort(opts.sortFiles)
-      .execute((results) => {
-        debugger;
-        presentResults(results, { dir: opts.dir, myfs, opts });
-      })
     
+    const results = await MyFS.execute(opts);
+    
+    debugger;
+    presentResults(results, opts);
+
       
   } catch (ex) {
     inspectErrorStack(ex);
