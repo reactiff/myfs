@@ -7,11 +7,11 @@ import { StorageKeys } from "utils/store/StorageKeys.mjs";
 export const desc = `Manage ignored file/path patterns (globs)`;
 export const group = '';
 
-const store = new GlobListStorage(StorageKeys.ExcludedGlobs);
+const store = new GlobListStorage(StorageKeys.FilterGlobs);
 
-export const getNextCommand = (ctx) => {
+export const getSubcommand = (commandName) => {
   debugger
-  return store.getNextCommand(ctx);
+  return store.getSubcommand(commandName);
 }
 
 export const getAvailableCommands = (ctx) => {

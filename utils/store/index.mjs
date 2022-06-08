@@ -1,96 +1,54 @@
 import Configstore from "configstore";
 import chalk from "chalk";
-import moment from "moment";
+import columnify from "columnify";
+import boxen from "boxen";
+import toDictionary from "../toDictionary.mjs";
 
 const store = new Configstore("fs", {});
 
-function _pushHist(k) {
-  const state = store.get(k);
-  if (state !== undefined) {
-    const hist = store.get(k + "__history") || [];
-    hist.push({
-      timestamp: Date.now(),
-      state,
-    });
-    store.set(k + "__history", hist);
-  }
-}
-
 function set(k, v) {
-  _pushHist(k);
   store.set(k, v);
 }
 
-function _revert(k) {
-  const hist = store.get(k + "__history") || [];
-  if (hist.length === 0) {
-    return;
-  }
-  const prior = hist.pop();
-  store.set(k, prior.state);
-  store.set(k + "__history", hist);
-  return prior.state;
+function erase(k) {
+  store.delete(k);
 }
 
-function _hist(k) {
-  const hist = store.get(k + "__history") || [];
-  return hist;
+
+function formatScalar(value, formatItem = (x) => x) {
+  if (value === undefined) return chalk.gray("(not set)") ;
+  return formatItem(value);
 }
 
-function hist(k) {
-  const history = _hist(k);
-  let i = 0;
-  console.group(chalk.yellow(`"${k}" history`));
-  for (let entry of history) {
-    const timestampCaption = moment(new Date(entry.timestamp)).fromNow();
-    console.group(chalk.underline(timestampCaption));
-    show(k, (item) => decodeURIComponent(chalk.green(item)), entry.state);
-    console.groupEnd();
-  }
-}
-
-function clear(k, clearedState) {
-  set(k, clearedState);
-  console.log(chalk.bgYellow.black(`"${k}" cleared`));
-  process.exit();
-}
-
-function revert(k) {
-  const value = _revert(k);
-  console.log(chalk.yellow(`"${k}" reverted to`));
-  show(k, (item) => decodeURIComponent(chalk.green(item)), value);
-  process.exit();
+function formatArray(arr, formatItem = (x) => x) {
+  if (arr.length === 0) return chalk.gray("(empty)");
+  const data = toDictionary(arr, 
+    (item, index) => `${index}.`,
+    (item, index) => formatItem(decodeURIComponent(item))
+  );
+  return columnify(data, {showHeaders: false});
 }
 
 function show(k, formatItem, items) {
-  
+
   const state = items || store.get(k);
-  if (Array.isArray(state)) {
 
-    state.forEach((item, index) => {
-      const decoded = decodeURIComponent(item);
-      const text = formatItem ? formatItem(decoded) : decoded;
-      console.log(chalk.gray(index + '.'), text);
-    })
+  const content = Array.isArray(state) 
+    ? formatArray(state, formatItem)
+    : formatScalar(state, formatItem);
 
-    if (state.length === 0) {
-      console.log("(empty)");
-    }
-  } else {
-    if (state !== undefined) {
-      const text = formatItem ? formatItem(state) : state;
-      console.log(text);
-    } else {
-      console.log("(not set)");
-    }
-  }
   console.log();
-
-  console.groupEnd();
-
-  if (!items) {
-    process.exit();
-  }
+  console.log(
+    boxen(content, {
+      title: k,
+      dimBorder: true,
+      textAlignment: "center",
+      padding: 1,
+      borderStyle: "round",
+      
+    })
+  );
+  console.log();
 }
 
 function add(listName, item, unique = false) {
@@ -139,10 +97,8 @@ export default {
   has: store.has,
   get: store.get,
   set,
-  revert,
-  clear,
+  erase,
   show,
-  hist,
   add,
   remove,
   rekey,

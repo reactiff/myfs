@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import fs from 'fs';
 import path from "path";
+import { getProgramDirectory } from "../bin/getProgramDirectory.mjs";
 import commandLoader from "./commandLoader.mjs";
 import toDictionary from "./toDictionary.mjs";
 import { Tracer } from "./Tracer.mjs";
@@ -37,8 +38,9 @@ export async function parseCommandContext(parentContext, depth, args) {
     // If command has positional arguments then it is the tail command
 
     const tracer = new Tracer('parseCommandContext').enter();
-
     const pctx = parentContext;
+    const __progDir = getProgramDirectory();
+
 
     const context = {
       depth: pctx ? pctx.depth + 1 : depth,
@@ -47,7 +49,7 @@ export async function parseCommandContext(parentContext, depth, args) {
       parentCommand: pctx ? pctx.command : undefined,
       // 
       argv: undefined, // will be merged by handler
-      currentPath: path.resolve(global.__basedir, 'commands'),
+      currentPath: path.resolve(__progDir, 'commands'),
       commandName: undefined,
       command: undefined,
       commands: {},
@@ -65,37 +67,50 @@ export async function parseCommandContext(parentContext, depth, args) {
       }
     };
     
-    // get current command name
-    context.commandName = context.args.length > 0 
+    const __commandName__ = context.args.length > 0 
         ? context.args[context.depth]
-        : 'fs'; // root  command
+        : 'fs'; // root  command;
 
+    // get current command name
+    context.commandName = __commandName__;
 
+    console.log(chalk.hex('#aaddff')(' ... parse token ' + chalk.bold(__commandName__)));
+   
     // update current path before loading command files
     if (pctx) {
         context.currentPath = path.join(pctx.currentPath, pctx.commandName, 'commands');
     }
-
     
-    // if the parent command can provide the command handler, use that.
-    // this is how standard subcommands can be implemented for things 
+    // If the parent command provides a method to get a subcommand, use it.
+    // This is how standard subcommands can be implemented for things 
     // like Lists that use the same set of subcommands
-    if (pctx && pctx.command && pctx.command.getNextCommand) {
-        debugger
-        context.command = pctx.command.getNextCommand(context);
+    if (pctx && pctx.module && pctx.module.getSubcommand) {
+        context.command = pctx.module.getSubcommand(context.commandName);
     } else {
         context.command = loadCommand(context);
     }
     if (!context.command) context.error = { message: 'Invalid command: ' + context.commandName };
-    
-    debugger
 
     // load command module
-    context.module = await commandLoader.load(context.command, context);
-
-    context.flags.help = Boolean(context.args.includes('--help'));
-
-    // collect command tokens (up to first flag)
+    context.module = await commandLoader.loadModule(context.command, context);
+    if (context.module.hasArguments) {
+        // If command has positional arguments, then it cannot be followed by any other command.
+        // Drop all tokens that may follow this command from commandTokens array, which is used to 
+        // pass control to the command that follows.
+        // ( note that the original commandline tokens including command arguments which the command needs are still preserved in the args array )
+        context.commandTokens = context.commandTokens.slice(0, context.depth + 1);
+    }
+  
+    ////////////////////////////////////////////////////////////////////////// BEGIN RESTRICTED SECTION
+    // NOTE: THIS ONLY RUNS ON THE FIRST CYCLE OF INVOKATION OF THIS FUNCTION.
+    // 
+    // - ON FIRST RUN:          ARGS PARAMETER IS PROVIDED 
+    //
+    // - ON RECURSIVE CALLS:    CONTEXT OBJECT IS PASSED AND CLONED, PRESERVING 
+    //                          THE RESULTS OF THIS OPERATION.
+    //
+    // -----------------------------------------
+    // Collect command tokens (up to first flag)
     if (args) {
         for (let i = 0; i < args.length; i++) {
             const token = args[i] 
@@ -106,14 +121,14 @@ export async function parseCommandContext(parentContext, depth, args) {
             context.commandTokens.push(token);
         }
     }
+    ////////////////////////////////////////////////////////////////////////// END RESTRICTED SECTION
     
     // get the tail (last command)
     context.tail =  context.commandTokens.length > 0 
         ? context.commandTokens[context.commandTokens.length - 1] 
         : undefined;
 
-    
-
+    context.flags.help = Boolean(context.args.includes('--help'));
 
     // load available commands for the context
     // const isRootCommand = context.tail === undefined && context.commandName === 'fs';

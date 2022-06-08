@@ -11,14 +11,15 @@ export const desc = `Show storage content`;
 export const group = "";
 export const options = {};
 
+//> fs storage show
+
 export async function execute(context) {
   try {
     const { args, argv, depth } = context;
     
-    debugger
     const cmdLineParams = argv.keys;
 
-    if (cmdLineParams.length > 1) {
+    if (cmdLineParams && cmdLineParams.length > 0) {
       cmdLineParams.forEach((k) => {
         store.show(k);
       });
@@ -45,7 +46,8 @@ export async function execute(context) {
       dimBorder: true,
       textAlignment: 'center',
       padding: 1,
-      borderStyle: 'round'
+      borderStyle: 'round',
+      showHeaders: false
     }));
 
     console.log();

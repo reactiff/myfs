@@ -78,24 +78,21 @@ export default class fsItem {
                     return;
                 }
                 search.startTime = Date.now();
+
                 searchFile(_this.fullPath, search.options)
-                .then(matches => {
-                    search.terminate(true);
-                    search.matches = matches,    
-                    _this.notify({ ok: true, matches });
-                })
-                .catch(error => {
-                    
-                    if (errorCount) return;
-
-                    errorCount++;
-
-                    inspectErrorStack(error);
-
-                    console.log( chalk.bgHex('#550000')(error.stack) );
-                    search.terminate(false, error);
-                    _this.notify({ ok: false, error });
-                });
+                    .then(matches => {
+                        search.terminate(true);
+                        search.matches = matches,    
+                        _this.notify({ ok: true, matches });
+                    })
+                    .catch(error => {
+                        if (errorCount) return;
+                        errorCount++;
+                        inspectErrorStack(error);
+                        console.log( chalk.bgHex('#550000')(error.stack) );
+                        search.terminate(false, error);
+                        _this.notify({ ok: false, error });
+                    });
             },
             terminate(ok, error) {
                 if (error) {
@@ -116,11 +113,9 @@ export default class fsItem {
 function searchFile(fullPath, options) {
     return new Promise((resolve, reject) => {
         try {
-            
             if (errorCount) return;
-
             const content = fs.readFileSync(path.resolve(fullPath), 'utf8');
-            const matches = [...content.matchAll(options.search)];
+            const matches = [...content.matchAll(options.find)];
             resolve(matches);
         } catch (err) {
             reject(err);

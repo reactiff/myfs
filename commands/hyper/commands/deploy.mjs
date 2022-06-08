@@ -244,7 +244,7 @@ export async function execute(context) {
 
   debugger
   NodeSSH = m.NodeSSH;
-  await safeExecute(args, argv, resolve);
+  await safeExecute(args, argv);
 
 }
 
@@ -255,7 +255,7 @@ export async function execute(context) {
  * @param {*} argv 
  * @param {*} resolve 
  */
-export async function safeExecute(args, argv, resolve) {
+export async function safeExecute(args, argv) {
   try {
     
     parseOptions(argv, options);

@@ -1,52 +1,42 @@
-// import _ from "lodash";
-import chalk from "chalk";
+import _ from "lodash";
+import minimatch from "minimatch";
 import path from "path";
-import { getFileSorter } from "./sort.mjs";
 import { parseRegexInput } from "utils/parseRegexInput.mjs";
 import { options } from "./options.mjs";
-
-// import { createRequire } from "module";
-// const require = createRequire(import.meta.url);
-// const minimatch = require("minimatch");
-import minimatch from "minimatch";
+import { getFileSorter } from "./sort.mjs";
 
 export function initOptions(argv) {
-  
-  const opts = {
-    order: argv.order || argv.O || options.O.default,
-    // global: argv.global || argv.G || options.G.default,
-    recursive: argv.recursive || argv.R || options.R.default,
-    // pattern: argv.pattern || argv.P,
-    // search: argv.search || argv.S,
-    // dirs: argv.dirs || argv.D,
-    // files: argv.files || argv.F,
-  };
+  const opts = {};
 
-  opts.webbify = argv.web || argv.W || options.W.default;
-  
-  if (opts.pattern) {
-    if (opts.pattern.startsWith("/")) {
-      const regex = parseRegexInput(opts.pattern);
-      opts.matchPattern = (path) => {
-        path.match(regex);
-      };
-    } else {
-      //globbing
-      const glob = opts.pattern;
-      opts.matchPattern = (path) => {
-        const linuxPath = path.replace(/\\/g, "/");
-        const isMatch = minimatch(linuxPath, glob, { debug: false });
-        return isMatch;
-      };
-    }
+  const optionEntries = Object.entries(options);
+  for (let kv of optionEntries) {
+    const k = kv[0];
+    const v = kv[1]; //option def
+    opts[k] = argv[v.alias] || argv[k] || v.default;
+    opts[v.alias] = opts[k];
+    opts[_.camelCase(v.alias)] = opts[k];
   }
 
-  if (opts.search) {
-    opts.search = parseRegexInput(opts.search);
+  if (opts.glob) {
+    opts.matchGlob = (filePath) => {
+      const pathToTest = filePath.replace(/\\/g, "/");
+      return minimatch(pathToTest, opts.pattern, { debug: false });
+    };
   }
 
-  opts.sorter = getFileSorter(opts.order);
-  opts.dir = path.resolve(process.cwd());
+  if (opts.find) {
+    opts.find = parseRegexInput(opts.find);
+  }
 
+  // sorting
+
+  if (opts.modified) {
+    opts.orderBy = opts.o = 'mtime';
+  }
+
+  if (opts.orderBy) {
+    opts.sortFiles = getFileSorter(opts.orderBy);
+  }
+  
   return opts;
 }

@@ -11,12 +11,43 @@ export { options } from "./ls/options.mjs";
 export const desc = `Search and manage files across directories`;
 export const group = 'File Search';
 
-function print(results, scope) {
-  const { dir, opts } = scope;
-  if (results.items.length && !opts.search) {
-    printResults(results, { dir, order: opts.order });
-    // summaryTable(results.items, { dir, palette: { table: { bg: "#002200" } } });
-  }
+function browseResults(results) {
+
+  const schema = {
+    title: "Search Results",
+    src: "hyperspace/static/ls/",
+    hotUpdate: true,
+  };
+
+  webbify(schema);
+
+  // OR
+
+  /////////////////////////////
+  // MAYBE OLDER IMPLEMENTATION
+
+  // const data = results.items
+  //   .map(i => ({ ...{ title: i.name }, ...i.stat }));
+  
+  // const p = await webbify(schema).catch(inspectErrorStack);
+
+  // p.render({ 
+  //   target: "main", 
+  //   template: "item", 
+  //   data 
+  // });
+}
+
+function presentSearchResults(results, opts) {
+  if (opts.browse) return browseResults();
+  terminalServeSearchResults();
+}
+
+function presentResults(results, opts) {
+  if (opts.search) return presentSearchResults(results, opts);
+  if (opts.summary) return summaryTable(results.items, { palette: { table: { bg: "#002200" } } });
+  if (opts.browse) return browseResults(results);
+  printResults(results.items, opts);
 }
 
 export async function execute(context) {
@@ -25,49 +56,15 @@ export async function execute(context) {
     const opts = initOptions(context.argv);
     const { dir } = opts;
 
-    const serveResults = opts.serve ? webbify : terminalServeSearchResults;
-
-    const myfs = new MyFS();
-
-    myfs
+    const myfs = new MyFS()
       .options(opts)
       .path(dir)
-      .sort(opts.sorter)
-      .onResults((update) => {
+      .sort(opts.sortFiles)
+      .execute((results) => {
         debugger;
-        serveResults(update, { dir: opts.dir, myfs, opts });
-      });
-
-    if (opts.dirs) { myfs.directories(); }
-    if (opts.files) { myfs.files(); }
-
-    const results = myfs.execute();
+        presentResults(results, { dir: opts.dir, myfs, opts });
+      })
     
-
-    if (!opts.webbify) {
-      print(results, { dir, opts });
-      return;
-    }
-    
-    ///////////////////////////////
-    // FROM HERE ONLY WEB RESULTS
-
-    const schema = {
-      title: "Search Results",
-      src: "hyperspace/static/ls/",
-      hotUpdate: true,
-    };
-
-    const data = results.items
-      .map(i => ({ ...{ title: i.name }, ...i.stat }));
-    
-    const p = await webbify(schema).catch(inspectErrorStack);
-
-    p.render({ 
-      target: "main", 
-      template: "item", 
-      data 
-    });
       
   } catch (ex) {
     inspectErrorStack(ex);

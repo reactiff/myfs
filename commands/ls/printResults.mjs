@@ -2,6 +2,8 @@ import _ from "lodash";
 import chalk from "chalk";
 import moment from "moment";
 
+import { getProgramDirectory } from "../../bin/getProgramDirectory.mjs"
+
 chalk.level = 3;
 
 export function printResults(fsItems, options) {
@@ -16,6 +18,7 @@ export function printResults(fsItems, options) {
 
   let cnt = 1;
 
+  const __progDir = getProgramDirectory();
 
   fsItems.items.forEach((f) => {
     if (colDefs.length) {
@@ -39,7 +42,7 @@ export function printResults(fsItems, options) {
       const formatSize = (x) => sizeCol.format(sizeCol.convert(x));
 
       const posix = f.path.replace(/\\/g, "/");
-      const relativePath = '.' + posix.slice(global.__basedir.length);
+      const relativePath = '.' + posix.slice(__progDir.length);
 
       console.log(
 
@@ -116,7 +119,7 @@ function padRight(l) {
 
 function getColDefs(fsItems, options) {
   let order;
-  switch (options.order) {
+  switch (options.orderBy) {
     case "name":
       order = "name";
       break;
@@ -127,10 +130,10 @@ function getColDefs(fsItems, options) {
       order = "birthtimeMs";
       break;
     default:
-      order = options.order + "Ms";
+      order = options.orderBy + "Ms";
   }
 
-  const timeColName = options.order === "name" ? "mtimeMs" : order;
+  const timeColName = options.orderBy === "name" ? "mtimeMs" : order;
 
   // name
   const l1 = fsItems.items.reduce(

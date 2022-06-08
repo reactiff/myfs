@@ -8,13 +8,16 @@ import {
 } from './myfs/getFilesByGlob.mjs';
 import readdirGlob from 'readdir-glob';
 import fsItem from './myfs/fsItem.mjs';
-
+import Search from './Search.mjs';
 
 // TODO: Custom scoring and sorting 
 // - add attribute(name, x => y(x)) method like this:  searchResults.attribute('efficiency', res => measureEfficiency(res) )
 // - then create a sorterByValueAtPath getSorterByValueAtPath('efficiency')
 
 class myfs {
+
+    items;
+
     constructor(items, search, oldCopy) {
         
         // inject split methods
@@ -60,10 +63,9 @@ class myfs {
                     search.results.push(result);
 
                     if (search.startedCount === search.finishedCount) {
-                        _this.notify('search-update', { 
-                            result,
+                        _this.notify('results-ready', { 
+                            items: search.results,
                             progress: search.progress,
-                            results: search.results,
                         });
                     }
                     
@@ -116,10 +118,6 @@ class myfs {
         return this;
     }
     
-    onResults(handler) {
-        this.subscribe('search-update', handler);
-        return this;
-    }
     
     files(pattern) {
         this.filters = (this.filters || [])
@@ -149,22 +147,15 @@ class myfs {
         
     }
 
-    execute() {
-        const search = {};
+    execute(callback) {
 
-        const paths = (this.options.global 
-            ? store.get('paths') || [] 
-            : [ this.path || path.resolve(process.cwd()) ]);
-        
-        
-        let items = [];
+        this.subscribe('results-ready', callback);
 
-        // scan all paths, expanding if recursive, 
-        // and collect all matching items
-        for (let p of paths) {
-            const itemsFromPath = enumeratePath(p, this.options, search);
-            items = items.concat( itemsFromPath );
-        }
+        const search = new Search();
+
+        const p = this.path || path.resolve(process.cwd());
+        
+        let items = enumeratePath(p, this.options, search);
                     
         // Apply all filters, and reduce the number of items
         if (this.filters) {
@@ -173,7 +164,7 @@ class myfs {
         }
                  
         // If searching, then for every file, prepare the search
-        if (this.options.search) {
+        if (this.options.find) {
             for (let f of items) {
                 if (f.stat.isFile()) {
                     f.prepareSearch(this.options);
@@ -181,15 +172,18 @@ class myfs {
             }
         }
         
-        if (!this.options.search) {
+        if (!this.options.find) {
             if (this.sortOrder) {
                 items.sort(this.sortOrder)
             }
         }
         
-        return new myfs(items, search, this);
-
-        // return new myfs(fsItems, search, {});
+        if (!this.options.find) {
+            this.notify('results-ready', { 
+                items,
+                progress: 1,
+            });
+        }
     }
 
     toArray() {

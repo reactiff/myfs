@@ -90,8 +90,8 @@ async function printAvailableCommands(module, context, cmdCharOffset) {
     const commands = context.getAvailableCommands(module);
     const modules = await Promise.all(
         Object.values(commands).map(c => {
-            if (c[Symbol.for('type')] === 'module') return c;
-            return commandLoader.load(c, context);
+            // if (c[Symbol.for('type')] === 'module') return c;
+            return commandLoader.loadModule(c, context);
         })
     ).catch((reason) => console.error(reason.message || reason));
 

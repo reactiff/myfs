@@ -1,51 +1,39 @@
 export const options = {
-  O: {
-    alias: "order",
+  o: {
+    alias: "order-by",
     description: "name|size|atime|mtime|ctime|btime",
     type: "string",
     default: "mtime",
   },
-  S: {
+  m: {
+    alias: "modified",
+    description: "Display recently modified files (same as sorting by mtime)",
+    type: "string",
+  },
+  s: {
     alias: "summary",
     description: "Display summary of listed files",
     type: "string",
     default: "mtime",
   },
-  // D: {
-  //   alias: "dirs",
-  //   description: "Show directories only",
-  //   type: "boolean",
-  // },
-  // F: {
-  //   alias: "files",
-  //   description: "Show files only",
-  //   type: "boolean",
-  // },
-  // new options
-  // G: {
-  //   alias: "global",
-  //   description: "Search global paths",
-  //   type: "boolean",
-  //   default: false,
-  // },
-  R: {
+  r: {
     alias: "recursive",
     description: "Recursively search all sub directories. (Default is TRUE)",
     type: "boolean",
     default: true,
   },
-  P: {
-    alias: "pattern",
-    description: "Path pattern to match",
+  g: {
+    alias: "glob",
+    description: "Match file path to glob",
     type: "string",
   },
-  s: {
-    alias: "search",
-    description: "Search inside files for pattern",
+  f: {
+    alias: "find",
+    description: "Find regex pattern in files",
     type: "string",
   },
-  W: {
-    alias: "webbify",
+  b: {
+    alias: "browse",
     description: "Display results in a browser",
     type: "boolean",
     default: false,

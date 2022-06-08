@@ -1,9 +1,73 @@
 import _ from "lodash";
 import store from "./index.mjs";
 import chalk from "chalk";
-import boxen from "boxen";
 import { StorageBase } from "./StorageBase.mjs";
 import { ShowHelp } from "../help.mjs";
+
+// LIST COMMANDS
+
+// These subcommands represent command modules that are normally loaded using module imports
+// The Symbol.type module tells the module loaded to return this object as is without trying to load it from a file as it normally does.
+
+class ListStorageInterfaceImplementation {
+  constructor(storage) {
+    
+    // ADD
+    this.add = {
+      [Symbol.for("type")]: "module",
+      command: "add <items..>",
+      name: "add",
+      arguments: "<item>",
+      hasArguments: true,
+      help: `Add ${storage.itemName} to the list`,
+      options: {},
+      group: "",
+      async execute(ctx) {
+        const tokens = Array.isArray(ctx.argv.items) ? ctx.argv.items : [];
+        if (tokens.length === 0) return ShowHelp;
+        // ok
+        for (let t of tokens) {
+          storage.add(t);
+        }
+      },
+    };
+
+    // DELETE
+    this.delete = {
+      [Symbol.for("type")]: "module",
+      command: "delete <items..>",
+      name: "delete",
+      arguments: "<item>",
+      hasArguments: true,
+      help: `Delete ${storage.itemName} from the list`,
+      options: {},
+      group: "",
+      async execute(ctx) {
+        debugger;
+        const tokens = Array.isArray(ctx.argv.items) ? ctx.argv.items : [];
+        if (tokens.length === 0) return ShowHelp;
+        // ok
+        for (let t of tokens) {
+          storage.delete(t);
+        }
+      },
+    };
+
+    // CLEAR
+    this.clear = {
+      [Symbol.for("type")]: "module",
+      command: "clear",
+      name: "clear",
+      help: `Clear all ${storage.itemName}s`,
+      options: {},
+      group: "",
+      async execute(ctx) {
+        debugger;
+        storage.clear();
+      },
+    };
+  }
+}
 
 /** Do not pass strings to Storage constructors!  Use storageKeys dictionary. */
 export class ListStorage extends StorageBase {
@@ -12,10 +76,10 @@ export class ListStorage extends StorageBase {
   constructor(uniqueKey, itemName = "item", unique = false) {
     super(uniqueKey, itemName || "item");
     this.unique = unique;
+    this.listStorageCommands = new ListStorageInterfaceImplementation(this);
   }
 
   add(value) {
-    debugger;
     store.add(this.uniqueKey, value);
     console.log(chalk.yellow(_.capitalize(this.itemName) + " added:"), value);
     return;
@@ -42,65 +106,13 @@ export class ListStorage extends StorageBase {
     return decoded;
   }
 
-  getNextCommand(ctx) {
-    debugger;
-
-    const depth = ctx.depth + 1;
-    const name = ctx.args[depth];
-
-    switch (name) {
-        case "add":
-            return getAddHandler(this, depth, ctx);
-        case "delete":
-            return getDeleteHandler(this, depth, ctx);
-        case "clear":
-            return getClearHandler(this, depth, ctx);
-      default:
-        return undefined;
-    }
+  getSubcommand(commandName) {
+    if (!Reflect.has(this.listStorageCommands, commandName)) undefined;
+    return this.listStorageCommands[commandName];
   }
 
+  /** ListStorage.getAvailableCommands() */
   getAvailableCommands() {
-      return {
-          add: { command: 'add <item>', name: 'add', arguments: '<item>', help: `Add ${this.itemName} to the list`, options: {}, group: '', [Symbol.for('type')]: 'module', },
-          delete: { command: 'delete <item>', name: 'delete', arguments: '<item>', help: `Delete ${this.itemName} from the list`, options: {}, group: '', [Symbol.for('type')]: 'module', },
-          clear: { command: 'clear', name: 'clear', help: `Delete all ${this.itemName}s`, options: {}, group: '', [Symbol.for('type')]: 'module', },
-      };
+    return this.listStorageCommands;
   }
 }
-
-function getAddHandler(storage, depth, ctx) {
-  return async () => {
-    debugger
-    const tokens = ctx.argv._.slice(depth);
-    if (tokens.length === 0) return ShowHelp;
-    for (let t of tokens) {
-        storage.add(t);
-    }
-  }
-}
-
-
-function getDeleteHandler(storage, depth, ctx) {
-
-  return async () => {
-    debugger
-    const tokens = ctx.argv._.slice(depth);
-    if (tokens.length === 0) return ShowHelp;
-    for (let t of tokens) {
-        storage.delete(t);
-    }
-  }
-}
-
-
-function getClearHandler(storage, depth, ctx) {
-
-  return async () => {
-    debugger
-    storage.clear();
-  }
-}
-
-
-

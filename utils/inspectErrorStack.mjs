@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import path from "path";
 import minimatch from "minimatch";
-import { getLocalPackagePath } from 'utils/getLocalPackagePath.mjs'
+import { getProgramDirectory } from "../bin/getProgramDirectory.mjs";
 
 function printSchemaValidationErrors(error) {
     debugger;
@@ -46,14 +46,11 @@ function printSchemaValidationErrors(error) {
 
 function inspectErrorStack(error) {
 
-  debugger
   if (error.type === "schemaValidation") {
     printSchemaValidationErrors(error);
   }
 
-  const rootPath = getLocalPackagePath();
-
-  // console.clear();
+  const rootPath = getProgramDirectory();
 
   if (error.code) {
     console.log(

@@ -6,75 +6,55 @@ import minimatch from 'minimatch';
 import { GlobListStorage } from "../store/GlobListStorage.mjs";
 import { StorageKeys } from '../store/StorageKeys.mjs';
 
-
-const excludedGlobStorage = new GlobListStorage(StorageKeys.ExcludedGlobs);
-const excludeGlobPatterns = excludedGlobStorage.getAll();
-// for (let p of (store.get('exclude') || [])) {
-//     excludeGlobPatterns.push(p);
-// }
+const ignoredGlobStorage = new GlobListStorage(StorageKeys.IgnoredGlobs);
+const ignoredGlobs = ignoredGlobStorage.getAll();
 
 export function enumeratePath(p, options, search) {
     
-    let dirItems = fs.readdirSync(p);
-
-    if (!search.omittedItems) search.omittedItems = [];
-    if (!search.excludedItems) search.excludedItems = [];
-    if (!search.mismatchedPatterns) search.mismatchedPatterns = [];
-
+    const dirItems = fs.readdirSync(p);
+    fs.is
     let fsItems = dirItems.reduce((allItems, item) => {
 
         let fullPath = path.join(p, item);
-        
-        const stat = fs.lstatSync(fullPath);
-        const isFile = stat.isFile();
-        const isDir = !stat.isFile();
+        const pathToTest = fullPath.replace(/\\/g, "/");
 
-        if (isDir) {
-            fullPath = path.join(fullPath, "/");
-        }
-
-        let posixPath = fullPath.replace(/\\/g, "/");
-
-
-        if (isFile && options.matchPattern) {
-            let patternMatched = options.matchPattern(posixPath);
-            if (!patternMatched) {
-                search.mismatchedPatterns.push(fullPath);
-                return allItems;
-            }    
-        }
-
-        const excludedByGlob = excludeGlobPatterns.some(glob => minimatch(posixPath, glob));
-
-        if (excludedByGlob) {
-            search.excludedItems.push(posixPath);
+        // is it ignored?
+        if (ignoredGlobs.some(glob => minimatch(pathToTest, glob))) {
+            // the path should be ignored
+            search.ignoredItems.push(pathToTest);
             return allItems;
         }
-    
 
-        // If it got here, the file is included
-        const fsi = new fsItem({ 
-            path: p, 
-            name: item,
-            moduleName: item.replace(/\.mjs$/, ''),
-            fullPath,
-            stat,
-        })
-
-        let items = [];
-
-        // DIRECTORY
-        if (isDir && options.recursive) {
-            items = fsi.enumerate(options, search);
+        // is there a glob to match?
+        if (options.matchGlob && !options.matchGlob(pathToTest)) {
+            // path does not match the glob
+            search.mismatchedPatterns.push(fullPath);
+            return allItems;
         }
 
-        // FILE
-        if (isFile) { 
-            items.push(fsi);
+        const stat = fs.lstatSync(fullPath);
+        
+        if (stat.isDirectory() && options.recursive) {
+            // DIRECTORY
+            // fullPath = path.join(fullPath, "/");
+            const items = enumeratePath(fullPath, options, search);
+            return allItems.concat(items);
+        } else {
+            // FILE
+            allItems.push(
+                new fsItem({ 
+                    path: p, 
+                    name: item,
+                    moduleName: item.replace(/\.mjs$/, ''),
+                    fullPath,
+                    stat,
+                })
+            );
+            return allItems;
         }
-
-        return allItems.concat(items);
     }, []);
+
+    // filter out nullish items and return
 
     return fsItems.filter(x => !!x);
 }

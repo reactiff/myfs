@@ -5,15 +5,15 @@
   "private": true,
   "description": "File System CLI",
   "type": "module",
-  "main": "bin/index.js",
+  "main": "bin/index.mjs",
   "scripts": {
     "lint": "eslint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --config ./jest.config.mjs"
   },
   "author": "Rick Ellis",
   "license": "MIT",
   "bin": {
-    "fs": "./bin/index.js"
+    "fs": "./bin/index.mjs"
   },
   "dependencies": {
     "boxen": "^5.0.1",
@@ -44,6 +44,7 @@
   "devDependencies": {
     "@babel/helper-validator-identifier": "^7.15.7",
     "eslint": "^8.2.0",
+    "jest": "^28.1.0",
     "jshint": "^2.13.1"
   },
   "workspaces": [

@@ -14,7 +14,7 @@ export async function nextCommand(currentContext, depth, initArgs) {
 
   // parse context
   const context = await parseCommandContext(currentContext, depth, initArgs);
-
+  
   // is there a command?
   if (!context.command) {
     printHelp(null, null, context);
@@ -25,11 +25,10 @@ export async function nextCommand(currentContext, depth, initArgs) {
   
   // if command is not tail, call nextCommand recursively.
   if (context.tail !== undefined && context.commandName !== context.tail) {
-    debugger;
 
     await nextCommand({
       ...context,
-      getNextCommand: context.command.getNextCommand,
+      getSubcommand: context.command.getSubcommand,
     }).catch((err) => {
       throw new Error(err.message || err);
     });
