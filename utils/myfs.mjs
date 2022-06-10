@@ -4,11 +4,10 @@ import { enumeratePath } from './myfs/enumeratePath.mjs';
 import { 
     resolvePath,
     readFile,
-    open,
+    // open,
 } from './myfs/getFilesByGlob.mjs';
-import readdirGlob from 'readdir-glob';
-import fsItem from './myfs/fsItem.mjs';
-import Search from './Search.mjs';
+import SearchSession from './search/SearchSession.mjs';
+import chalk from 'chalk';
 
 // TODO: Custom scoring and sorting 
 // - add attribute(name, x => y(x)) method like this:  searchResults.attribute('efficiency', res => measureEfficiency(res) )
@@ -27,7 +26,6 @@ class myfs {
         Object.assign(this, { 
             resolvePath,
             readFile,
-            open,
         });
 
     }
@@ -79,24 +77,25 @@ class myfs {
     }
 
     execute(callback) {
-
         this.subscribe('results-ready', callback);
-
-        this.search = new Search();
         this.path = path.resolve(process.cwd());
+
+        this.search = new SearchSession(this);
+
         this.items = enumeratePath(this.path, this);
-                 
+
         // If searching, then for every file, prepare the search
         if (this.options.find) {
-            return executeSearch(this);
+            this.search.execute();
+            return;
         }
         
-        if (this.options.sortOrder) {
-            items.sort(this.options.sortOrder)
+        if (this.options.sortFiles) {
+            this.items.sort(this.options.sortFiles)
         }
                 
         this.notify('results-ready', { 
-            items,
+            items: this.items,
             progress: 1,
         });
     }
@@ -106,37 +105,3 @@ class myfs {
 }
 
 export default myfs;
-
-function executeSearch(_myfs) {
-    const files = _myfs.items.filter(f => f.stat.isFile());
-    files.forEach(f => f.createSearch(onSearchComplete))
-    files.forEach(f => f.executeSearch())
-}
-
-function onSearchComplete(fsi) {
-
-    const { myfs } = fsi;
-    const { ok, matches, error } = fsi.search;
-
-    myfs.search.finishedCount++;
-    myfs.search.progress = myfs.search.finishedCount / 
-                           myfs.search.startedCount;
-
-    const result = {
-        number: myfs.search.finishedCount,
-        file: fsi,
-        ok, 
-        matches,
-        error,
-    };
-
-    myfs.search.results.push(result);
-
-    if (myfs.search.startedCount === myfs.search.finishedCount) {
-        myfs.notify('results-ready', { 
-            items: myfs.search.results,
-            progress: myfs.search.progress
-        });
-    }
-    
-}

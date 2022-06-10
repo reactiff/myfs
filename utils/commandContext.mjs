@@ -74,8 +74,6 @@ export async function parseCommandContext(parentContext, depth, args) {
     // get current command name
     context.commandName = __commandName__;
 
-    console.log(chalk.hex('#aaddff')(' ... parse token ' + chalk.bold(__commandName__)));
-   
     // update current path before loading command files
     if (pctx) {
         context.currentPath = path.join(pctx.currentPath, pctx.commandName, 'commands');

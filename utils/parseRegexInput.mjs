@@ -19,7 +19,8 @@ export function parseRegexInput(input) {
       return regex;
     }
     else {
-      const regex = new RegExp(input, 'gi');
+      const ptrn = input.replace(/\\{2}/g, '\\');
+      const regex = new RegExp(ptrn, 'mgi');
       return regex;
     }
   }

@@ -6,6 +6,8 @@ import { getProgramDirectory } from "../../bin/getProgramDirectory.mjs"
 
 chalk.level = 3;
 
+const __progDir = getProgramDirectory();
+
 export function printResults(fsItems, options) {
 
   console.log();
@@ -14,11 +16,12 @@ export function printResults(fsItems, options) {
 
   const colDefs = getColDefs(fsItems, options);
   
-  printColHeaders(colDefs, options);
+  if (fsItems.items.length) {
+    printColHeaders(colDefs, options);
+  }
+  
 
   let cnt = 1;
-
-  const __progDir = getProgramDirectory();
 
   fsItems.items.forEach((f) => {
     if (colDefs.length) {
@@ -47,7 +50,7 @@ export function printResults(fsItems, options) {
       console.log(
 
         // #
-        chalk.gray((cnt++).toString().padEnd(3)),
+        chalk.gray((cnt++).toString().padStart(colDefs[0].length)),
 
         // name
         f.name.padEnd(colDefs[1].length, " "),
@@ -75,38 +78,10 @@ function convertTime(x) {
 }
 
 function convertSize(x) {
-  let value, units;
   return {
     value: x,
     units: '',
   };
-
-  // the following converts to KBs and MBs etc.
-
-  // if (x < 1024) { 
-  //   value = parseInt(x);
-  //   units = ' B';
-  // }
-  // else if (x < 1024 * 1000) {
-  //   value = Math.ceil(parseFloat(x / 1024));
-  //   units = 'KB';
-  // }
-  // else if (x < 1024 * 1000000) {
-  //   value = Math.ceil(parseFloat(x / 1024000));
-  //   units = 'MB';
-  // }
-  // else if (x < 1024 * 1000000000) {
-  //   value = Math.ceil(parseFloat(x / 1024000000));
-  //   units = 'GB';
-  // }
-  // else if (x < 1024 * 1000000000000) {
-  //   value = Math.ceil(parseFloat(x / 1024000000000));
-  //   units = 'TB';
-  // }
-  // return {
-  //   value, 
-  //   units
-  // }; 
 }
 
 function padLeft(l) {
@@ -120,6 +95,9 @@ function padRight(l) {
 function getColDefs(fsItems, options) {
   let order;
   switch (options.orderBy) {
+    case "path":
+      order = "relativePath";
+      break;
     case "name":
       order = "name";
       break;
@@ -133,7 +111,12 @@ function getColDefs(fsItems, options) {
       order = options.orderBy + "Ms";
   }
 
-  const timeColName = options.orderBy === "name" ? "mtimeMs" : order;
+  const isNonTimeSort = ['name', 'size', 'path'].includes(options.orderBy);
+
+  const timeColName = isNonTimeSort ? "mtimeMs" : order;
+
+  // length of ### caption
+  const l0 = fsItems.items.length ? Math.floor(Math.log10(fsItems.items.length)) + 1 : 0;
 
   // name
   const l1 = fsItems.items.reduce(
@@ -157,20 +140,21 @@ function getColDefs(fsItems, options) {
   // path
   const l4 = fsItems.items.reduce((a, item) => {
     const value = item.path;
-    return Math.max(a, value.length);
+    return Math.max(a, value.length - __progDir.length);
   }, 0);
 
   return [
-    { name: "#", length: 3 },
+    { name: "#", getCH: () => "#".repeat(l0), length: l0 },
     { name: "name", length: l1 },
-    { name: "size", length: l2, convert: convertSize, format: (s) => (s.value + s.units).padStart(l2, " ") },
-    { name: timeColName, length: l3, convert: convertTime, format: padLeft(l3) },
+    { name: "size", getCH: () => "size".padStart(l2, " "), length: l2, convert: convertSize, format: (s) => (s.value + s.units).padStart(l2, " ") },
+    { name: timeColName, getCH: () => "age".padStart(l3, " "), length: l3, convert: convertTime, format: padLeft(l3) },
     { name: "path", length: l4 },
   ];
 }
 
 function printColHeaders(colDefs, options) {
-  const headers = [...colDefs.map((cd) => cd.name.padEnd(cd.length, " "))];
+  const formatHeader = (cd) => cd.getCH ? cd.getCH() : cd.name.padEnd(cd.length, " ");
+  const headers = [...colDefs.map((cd) => formatHeader(cd))];
   console.log(...headers);
   const dashes = [...colDefs.map((cd) => chalk.gray("-".repeat(cd.length)))];
   console.log(...dashes);

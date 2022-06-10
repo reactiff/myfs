@@ -2,44 +2,67 @@ import chalk from "chalk";
 import { getSearchResultSorter } from "./sort.mjs";
 // import { printActionMenu } from "./printActionMenu.mjs";
 import boxen from "boxen";
+import moment from 'moment';
 
-export function terminalServeSearchResults(update, scope) {
-  const { opts } = scope;
+export function terminalServeSearchResults(results, opts) {
 
-  debugger
-  
   console.log("\n");
   console.log(
-    boxen("Search results for: " + chalk.magenta(opts.search), { padding: 1 })
+    boxen("Search results for: " + chalk.magenta(opts.find), { padding: 1 })
   );
 
-  update.results.sort(getSearchResultSorter(opts.order.name));
+  const items = results.items;
 
+  items.sort(getSearchResultSorter(opts.orderBy));
+
+  let itemNumber = 0;
   // Keep the console output parallel for now
-  for (let result of update.results) {
-    if (result.ok && result.matches.length > 0) {
-      // const duration = moment.duration(result.file.search.elapsed);
-      console.groupCollapsed(
-        chalk.greenBright(result.file.name),
-        chalk.gray(result.file.fullPath)
-      );
+  for (let item of items) {
+    if (item.ok && item.lineResults.length > 0) {
+      
+      const duration = moment.duration(item.file.search.elapsed);
+      
+      const fileName = item.file.name;
+      const filePath = item.file.fullPath;
+ 
+      console.log('In ' + chalk.bold.white(filePath + ':'));
+      itemNumber++;
 
-      console.log(result.matches.length + " matches");
+      for (let lr of item.lineResults) {
 
-      // for (let m of result.matches) {
-      //   const text = m[0];
-      //   const excerpt = m.input.substring(m.index, text.length)
-      //   console.log(
-      //     chalk.greenBright(m.index + ":" + text.length)
-      //   );
-      //   console.log(
-      //     excerpt
-      //   );
-      // }
+        let line = lr.line;
+        const lineNumber = lr.lineNumber;
 
-      console.groupEnd();
+        const matches = lr.matches;
+        const tokens = matches.map((m) => m[0]);
+
+        const gutter = chalk.bgHex('#111').hex('#915d14')(' ' + lineNumber.toString() + ': ');
+        let source = gutter + chalk.bgHex('#000').gray(' ' + line);
+
+        // replace matches with placeholder tags
+        for (let i = 0; i < tokens.length; i++) {
+          const token = tokens[0];
+          source = source.replace(new RegExp(escapeRegExp(token), 'g'), `{{M[${i}]}}`);
+        }
+
+        // now put back the matches with additional formatting, replacing the tags
+        for (let i = 0; i < tokens.length; i++) {
+          const token = tokens[0];
+          source = source.replace(new RegExp(escapeRegExp(`{{M[${i}]}}`), 'g'), chalk.bold.yellow(token));
+        }
+
+        console.group('')
+        console.log(chalk.hex('#9cc8f7')(filePath + ':' + lineNumber));
+        console.group('')
+        console.log(source);
+        console.groupEnd()
+        console.groupEnd()
+        console.log('');
+      }
     }
   }
+}
 
-  // printActionMenu({ dir, myFs, opts });
+function escapeRegExp(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }

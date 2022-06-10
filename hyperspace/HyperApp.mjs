@@ -10,6 +10,7 @@ import fnOrValue from "../utils/fnOrValue.mjs";
 // Split instance methods to be bound
 import createAppSocket from "./createAppSocket.mjs";
 import requestPage from './requestPage.mjs';
+import { randomUUID } from "crypto";
 
 const on = {};
 
@@ -51,8 +52,11 @@ function preflightCheck(schema) {
   if (path.basename(process.cwd()) !== 'src') throw new Error('You must be inside /src folder to server up the app.');
 }
 
+const _constructorId = randomUUID();
+const _constructorError = 'Use HyperApp.create(schema) instead of new HyperApp()';
 export default class HyperApp {
   constructor() {
+    if (!arguments.length||arguments[0]!==Symbol.for(_constructorId)) throw new Error(_constructorError); 
     this.requestPage = requestPage.bind(this);
   }
 
@@ -60,7 +64,7 @@ export default class HyperApp {
     return new Promise(resolve => {
       preflightCheck();
 
-      const hyperApp = new HyperApp();
+      const hyperApp = new HyperApp(Symbol.for(_constructorId));
       hyperApp.schema = schema;
 
       // create app state

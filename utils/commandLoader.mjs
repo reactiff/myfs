@@ -25,7 +25,6 @@ function loadModule(command, context) {
       .then(m => {
         const fsitem = createFsItem(command);
         const module = createCommandModule({ context, m, fsitem });
-        console.log(chalk.hex('#ffaa00')(' ... < resolved module ' + relative));
         resolve(module);
       })
       .catch(ex => {

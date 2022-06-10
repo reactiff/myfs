@@ -39,15 +39,15 @@ function browseResults(results) {
 }
 
 function presentSearchResults(results, opts) {
-  if (opts.browse) return browseResults();
-  terminalServeSearchResults();
+  if (opts.browse) return browseResults(results, opts);
+  terminalServeSearchResults(results, opts);
 }
 
 function presentResults(results, opts) {
-  if (opts.search) return presentSearchResults(results, opts);
-  if (opts.summary) return summaryTable(results.items, { palette: { table: { bg: "#002200" } } });
+  if (opts.summary) return summaryTable(results, { palette: { table: { bg: "#002200" } } });
+  if (opts.find) return presentSearchResults(results, opts);
   if (opts.browse) return browseResults(results);
-  printResults(results.items, opts);
+  printResults(results, opts);
 }
 
 export async function execute(context) {
@@ -57,7 +57,6 @@ export async function execute(context) {
     
     const results = await MyFS.execute(opts);
     
-    debugger;
     presentResults(results, opts);
 
       

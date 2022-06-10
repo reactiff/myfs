@@ -30,6 +30,7 @@
     "jsdom": "^18.0.1",
     "known-css-properties": "^0.23.0",
     "lodash": "^4.17.21",
+    "memoizee": "^0.4.15",
     "minimatch": "^3.0.4",
     "moment": "^2.29.1",
     "open": "^8.4.0",
@@ -37,6 +38,7 @@
     "pug": "^3.0.2",
     "readdir-glob": "^1.1.1",
     "superagent": "^7.0.2",
+    "timespan-parser": "^1.2.0",
     "trace": "^3.1.1",
     "uuid": "^8.3.2",
     "yargs": "^17.1.1"

@@ -2,9 +2,9 @@ import _ from "lodash";
 
 const reFunction = /\([[:alnum:]]+?,\s*?[[:alnum:]]+?\)\s*?=>.+/;
 
-const sortFilesByStringAttr = (attr) => (a, b) => {
-  const astr = (a[attr]||'').toLowerCase();
-  const bstr = (b[attr]||'').toLowerCase();
+const sortFilesByStringAtPath = (path, defaultValue) => (a, b) => {
+  const astr = (_.get(a, path)||defaultValue||'').toLowerCase();
+  const bstr = (_.get(b, path)||defaultValue||'').toLowerCase();
   if (astr < bstr) return -1;
   if (astr > bstr) return 1;
   return 0;
@@ -17,7 +17,9 @@ const sortObjectsByValueAtPath = (path) => (a, b) => {
 };
 
 const fileSort = {
-  default: sortFilesByStringAttr("name"),
+  default: sortFilesByStringAtPath("name"),
+  path: sortFilesByStringAtPath("relativePath", '/'),
+    
   size: (a, b) => b.stat.size - a.stat.size,
   atime: (a, b) => b.stat.atimeMs - a.stat.atimeMs,
   btime: (a, b) => b.stat.birthtimeMs - a.stat.birthtimeMs,
@@ -41,7 +43,9 @@ const searchResultSort = {
   btime: (a, b) => b.file.stat.birthtimeMs - a.file.stat.birthtimeMs,
   birthtime: (a, b) => b.file.stat.birthtimeMs - a.file.stat.birthtimeMs,
   ctime: (a, b) => b.file.stat.ctimeMs - a.file.stat.ctimeMs,
-  mtime: (a, b) => b.file.stat.mtimeMs - a.file.stat.mtimeMs,
+  mtime: (a, b) => {
+    return b.file.stat.mtimeMs - a.file.stat.mtimeMs
+  },
 };
 
 

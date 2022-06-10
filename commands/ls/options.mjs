@@ -1,4 +1,9 @@
 export const options = {
+  a: {
+    alias: "age",
+    description: "Max age for modified files to be shown",
+    type: "string",
+  },
   o: {
     alias: "order-by",
     description: "name|size|atime|mtime|ctime|btime",
@@ -13,8 +18,8 @@ export const options = {
   s: {
     alias: "summary",
     description: "Display summary of listed files",
-    type: "string",
-    default: "mtime",
+    type: "boolean",
+    default: false,
   },
   r: {
     alias: "recursive",
