@@ -10,14 +10,14 @@ export function summaryTable(results, scope) {
   const { items } = results;
 
   const getItemFolder = (item) => {
-    const relativePath = item.relativePath || item.file.relativePath;
+    const relativePath = item.relativePath !== undefined ? item.relativePath : item.file.relativePath;
     const tokens = relativePath.split("/");
     const folder = tokens[0] || tokens[1];
     return folder ? "./" + folder : ".";
   };
 
   const getItemType = (item) => {
-    const fullPath = item.fullPath || item.file.fullPath || item;
+    const fullPath = item.fullPath !== undefined ? item.fullPath : item.file.fullPath || item;
     const fileType = path.extname(fullPath);
     return fileType || '(no ext)';
   };

@@ -32,6 +32,11 @@ export const options = {
     description: "Match file path to glob",
     type: "string",
   },
+  x: {
+    alias: "exclude",
+    description: "Exclude glob",
+    type: "string",
+  },
   f: {
     alias: "find",
     description: "Find regex pattern in files",

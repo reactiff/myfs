@@ -9,6 +9,8 @@ import timespan from 'timespan-parser';
 export function initOptions(argv) {
   const opts = {};
 
+  
+  
   const optionEntries = Object.entries(options);
   for (let kv of optionEntries) {
     const k = kv[0];
@@ -22,8 +24,22 @@ export function initOptions(argv) {
   if (opts.glob) {
     opts.matchGlob = (filePath) => {
       const debugging = false;//filePath.includes('.pug');
-      const pathToTest = filePath.replace(/\\/g, "/");
+      let pathToTest = filePath.replace(/\\/g, "/");
+      if (!opts.glob.includes('/')) {
+        opts.glob = '**/' + opts.glob;
+      }
       return minimatch(pathToTest, opts.glob, { debug: debugging, partial: false });
+    };
+  }
+
+  if (opts.exclude) {
+    opts.matchExclude = (filePath) => {
+      const debugging = false;//filePath.includes('.pug');
+      let pathToTest = filePath.replace(/\\/g, "/");
+      if (!opts.exclude.includes('/')) {
+        opts.exclude = '**/' + opts.exclude;
+      }
+      return !minimatch(pathToTest, opts.exclude, { debug: debugging, partial: false });
     };
   }
 

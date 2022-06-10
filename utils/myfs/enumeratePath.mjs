@@ -28,12 +28,20 @@ export function enumeratePath(p, myfs) {
         }
 
         const stat = fs.lstatSync(fullPath);
-
-        
+       
         // is there a file glob to match?
         if (!stat.isDirectory() && options.glob && !options.matchGlob(pathToTest)) {
             // path does not match the glob
             search.mismatchedPatterns.push(fullPath);
+            return allItems;
+        }
+        
+        if (fullPath.includes('fs-cli')) debugger
+
+        // is there an exclude glob to match?
+        if (options.exclude && options.matchExclude(pathToTest)) {
+            // path matches exclude glob
+            search.excludedPatterns.push(fullPath);
             return allItems;
         }
 

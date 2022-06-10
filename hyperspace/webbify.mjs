@@ -8,15 +8,13 @@ export default function webbify(schema) {
   return new Promise((resolve, reject) => {
  
     // 1. Create HyperApp instance
-    createApp(schema).catch(inspectErrorStack)
-  
-      // App is ready
+    createApp(schema)
+      .catch(inspectErrorStack)
       .then((hApp) => {
+
         // Open a page request
-  
-        hApp.requestPage("/").catch(inspectErrorStack)
-  
-          // Page is ready
+        hApp.requestPage("/")
+          .catch(inspectErrorStack)
           .then((page) => {
 
             page.onError((msg) => {
@@ -30,9 +28,7 @@ export default function webbify(schema) {
             resolve([ page, hApp ]);
           });
       });
-
   });
-  
 }
 
 // Page HTML will be loaded from index.html file inside your appSchema.src folder

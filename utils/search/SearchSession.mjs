@@ -5,7 +5,10 @@ export default class SearchSession {
         
         this.omittedItems = [];
         this.ignoredItems = [];
+
         this.mismatchedPatterns = [];
+        this.excludedPatterns = [];
+
         this.filteredPatterns = [];
 
         this.results = [];

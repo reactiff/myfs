@@ -38,16 +38,17 @@ function show(k, formatItem, items) {
     : formatScalar(state, formatItem);
 
   console.log();
-  console.log(
-    boxen(content, {
-      title: k,
-      dimBorder: true,
-      textAlignment: "center",
-      padding: 1,
-      borderStyle: "round",
+  console.log(content);
+
+  //   boxen(content, {
+  //     title: k,
+  //     dimBorder: true,
+  //     textAlignment: "center",
+  //     padding: 1,
+  //     borderStyle: "round",
       
-    })
-  );
+  //   })
+  // );
   console.log();
 }
 

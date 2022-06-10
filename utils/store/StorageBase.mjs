@@ -18,9 +18,6 @@ export class StorageBase {
     }
 
     show(title) {
-        console.log();
-        console.log(boxen(' ' + title + ' '));
-        console.log();
         store.show(this.uniqueKey);
     }
 

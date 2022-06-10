@@ -8,34 +8,30 @@ import webbify from "hyperspace/webbify.mjs";
 
 // COMMAND MODULE PROPS
 export { options } from "./ls/options.mjs";
+
+export const command = 'ls [glob]';
 export const desc = `Search and manage files across directories`;
 export const group = 'File Search';
 
-function browseResults(results) {
+async function browseResults(results, opts) {
 
+  // NEWER
   const schema = {
     title: "Search Results",
     src: "hyperspace/static/ls/",
     hotUpdate: true,
   };
-
-  webbify(schema);
-
-  // OR
-
-  /////////////////////////////
-  // MAYBE OLDER IMPLEMENTATION
-
-  // const data = results.items
-  //   .map(i => ({ ...{ title: i.name }, ...i.stat }));
   
-  // const p = await webbify(schema).catch(inspectErrorStack);
+  const data = results.items
+    .map(i => ({ ...{ title: i.name }, ...i.stat }));
+  
+  const p = await webbify(schema).catch(inspectErrorStack);
 
-  // p.render({ 
-  //   target: "main", 
-  //   template: "item", 
-  //   data 
-  // });
+  p.render({ 
+    target: "main", 
+    template: "item", 
+    data 
+  });
 }
 
 function presentSearchResults(results, opts) {
@@ -44,9 +40,9 @@ function presentSearchResults(results, opts) {
 }
 
 function presentResults(results, opts) {
+  if (opts.browse) return browseResults(results, opts);
   if (opts.summary) return summaryTable(results, { palette: { table: { bg: "#002200" } } });
   if (opts.find) return presentSearchResults(results, opts);
-  if (opts.browse) return browseResults(results);
   printResults(results, opts);
 }
 
@@ -55,6 +51,8 @@ export async function execute(context) {
 
     const opts = initOptions(context.argv);
     
+    
+
     const results = await MyFS.execute(opts);
     
     presentResults(results, opts);

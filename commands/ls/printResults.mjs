@@ -1,12 +1,14 @@
 import _ from "lodash";
 import chalk from "chalk";
 import moment from "moment";
+import path from "path";
 
 import { getProgramDirectory } from "../../bin/getProgramDirectory.mjs"
 
 chalk.level = 3;
 
 const __progDir = getProgramDirectory();
+const cwd = path.resolve(process.cwd());
 
 export function printResults(fsItems, options) {
 
@@ -20,7 +22,6 @@ export function printResults(fsItems, options) {
     printColHeaders(colDefs, options);
   }
   
-
   let cnt = 1;
 
   fsItems.items.forEach((f) => {
@@ -45,7 +46,7 @@ export function printResults(fsItems, options) {
       const formatSize = (x) => sizeCol.format(sizeCol.convert(x));
 
       const posix = f.path.replace(/\\/g, "/");
-      const relativePath = '.' + posix.slice(__progDir.length);
+      const relativePath = '.' + posix.slice(cwd.length);
 
       console.log(
 
@@ -61,8 +62,8 @@ export function printResults(fsItems, options) {
         // time
         chalk.rgb(...timeColor)(formatTime(f.stat[timeCol.name])),
 
-        // path
-        chalk.gray(relativePath)
+        // full path
+        chalk.gray(relativePath + '/' + f.name)
       );
     } else {
       console.log(f.fullPath);

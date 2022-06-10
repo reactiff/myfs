@@ -1,5 +1,5 @@
 export const StorageKeys = {
 
-    IgnoredGlobs: "ignored-globs",
+    IgnoredGlobs: "ignored",
     
 };

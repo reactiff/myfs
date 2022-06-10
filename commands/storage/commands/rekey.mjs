@@ -13,15 +13,13 @@ export async function execute(context) {
 
     const { args, argv } = context;
 
-    debugger
-
     // test 1
 
     console.assert(store.has(argv.key) && !store.has(argv.newKey), `Assert failed: ${EXISTS}key AND ${NEXISTS}newKey` );
 
     store.rekey(
-      argv.from,
-      argv.to
+      argv.key,
+      argv.newKey
     );
 
     // test 2
