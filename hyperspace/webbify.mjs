@@ -8,6 +8,7 @@ export default function webbify(schema) {
   return new Promise((resolve, reject) => {
  
     // 1. Create HyperApp instance
+    
     createApp(schema)
       .catch(inspectErrorStack)
       .then((hApp) => {

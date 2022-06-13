@@ -6,6 +6,8 @@ import { initOptions } from "./ls/initOptions.mjs";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
 import webbify from "hyperspace/webbify.mjs";
 
+import path from "path";
+
 // COMMAND MODULE PROPS
 export { options } from "./ls/options.mjs";
 
@@ -18,7 +20,7 @@ async function browseResults(results, opts) {
   // NEWER
   const schema = {
     title: "Search Results",
-    src: "hyperspace/static/ls/",
+    src: path.resolve("hyperspace/static/ls"),
     hotUpdate: true,
   };
   
@@ -35,12 +37,12 @@ async function browseResults(results, opts) {
 }
 
 function presentSearchResults(results, opts) {
-  if (opts.browse) return browseResults(results, opts);
+  if (opts.webbify) return browseResults(results, opts);
   terminalServeSearchResults(results, opts);
 }
 
 function presentResults(results, opts) {
-  if (opts.browse) return browseResults(results, opts);
+  if (opts.webbify) return browseResults(results, opts);
   if (opts.summary) return summaryTable(results, { palette: { table: { bg: "#002200" } } });
   if (opts.find) return presentSearchResults(results, opts);
   printResults(results, opts);

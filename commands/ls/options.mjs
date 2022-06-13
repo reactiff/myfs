@@ -42,8 +42,8 @@ export const options = {
     description: "Find regex pattern in files",
     type: "string",
   },
-  b: {
-    alias: "browse",
+  w: {
+    alias: "webbify",
     description: "Display results in a browser",
     type: "boolean",
     default: false,

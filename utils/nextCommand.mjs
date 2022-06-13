@@ -1,9 +1,7 @@
-import { parseCommandContext } from "./commandContext.mjs";
-import inspectErrorStack from "./inspectErrorStack.mjs";
 import yargs from "yargs";
+import { parseCommandContext } from "./commandContext.mjs";
 import remap from "./remap.mjs";
 import { printHelp } from "./help.mjs";
-import chalk from "chalk";
 import { Tracer } from "./Tracer.mjs";
 
 export async function nextCommand(currentContext, depth, initArgs) {

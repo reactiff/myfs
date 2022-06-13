@@ -49,7 +49,7 @@ function getInitialState(schema) {
 }
 
 function preflightCheck(schema) {
-  if (path.basename(process.cwd()) !== 'src') throw new Error('You must be inside /src folder to server up the app.');
+  if (!schema.src) throw new Error('Schema is missing src folder.');
 }
 
 const _constructorId = randomUUID();
@@ -62,7 +62,7 @@ export default class HyperApp {
 
   static create(schema) {
     return new Promise(resolve => {
-      preflightCheck();
+      preflightCheck(schema);
 
       const hyperApp = new HyperApp(Symbol.for(_constructorId));
       hyperApp.schema = schema;
@@ -72,7 +72,7 @@ export default class HyperApp {
 
       hyperApp.clients = [];
       hyperApp.updateState = (partial) => {
-        
+        console.log(chalk.yellow('hyperApp.updateState(partial) is called'))
       }
 
 

@@ -4,7 +4,7 @@ import inspectErrorStack from "utils/inspectErrorStack.mjs";
 import createPageSocket from "./createPageSocket.mjs";
 import createPage from "./Page.mjs";
 
-function createPageScope(app, route) {
+function createPageRequest(app, route) {
   return new Promise((resolve) => {
     const { schema } = app;
 
@@ -34,7 +34,7 @@ function createPageScope(app, route) {
 export function requestPage(route) {
   const app = this;
   return new Promise((resolve) => {
-    createPageScope(app, route)
+    createPageRequest(app, route)
       .then(page => resolve(page))
       .catch(inspectErrorStack);
   });

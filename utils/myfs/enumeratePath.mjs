@@ -36,7 +36,7 @@ export function enumeratePath(p, myfs) {
             return allItems;
         }
         
-        if (fullPath.includes('fs-cli')) debugger
+        // if (fullPath.includes('fs-cli')) debugger
 
         // is there an exclude glob to match?
         if (options.exclude && options.matchExclude(pathToTest)) {
