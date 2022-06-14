@@ -1,8 +1,8 @@
 import open from "open";
 import { v4 as uuid } from "uuid";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
-import createPageSocket from "./createPageSocket.mjs";
-import createPage from "./Page.mjs";
+import createPageSocket from "../createPageSocket.mjs";
+import createPage from "../Page.mjs";
 
 function createPageRequest(app, route) {
   return new Promise((resolve) => {

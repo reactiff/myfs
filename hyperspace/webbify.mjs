@@ -11,7 +11,14 @@ export default function webbify(schema) {
     
     const app = new HyperApp(schema);
 
-    const page = app.request
+    app.onStart((...args) => {
+      debugger
+      console.log(...args);
+    })
+
+    await app.start();
+    
+    await app.open('/');
 
     createApp(schema)
       .catch(inspectErrorStack)

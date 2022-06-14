@@ -1,35 +1,19 @@
 import createExpressApp from "express";
 import path from "path";
 import chalk from "chalk";
+import open from "open";
 import { createViewEngine } from "../viewEngine/createViewEngine.mjs";
 import { exec } from "child_process";
-import { makeStaticFileLoaders } from "../viewEngine/makeStaticFileLoaders.mjs";
 import inspectErrorStack from "utils/inspectErrorStack";
 import fnOrValue from "utils/fnOrValue";
 
 // Split instance methods to be bound
 import createAppSocket from "./createAppSocket.mjs";
-import requestPage from '../requestPage.mjs';
-import { randomUUID } from "crypto";
+import _requestPage from './_requestPage.mjs';
 import { validateSchema } from "./json-schema.mjs";
+import HyperServer from "../hyper-server/HyperServer.mjs";
+import { getProgramDirectory } from "../../bin/getProgramDirectory.mjs";
 
-const on = {};
-
-function onTemplateHotUpdate(pages, name, deltas) {
-  for (let d of deltas) {
-    for (let request of pages) {
-      request.page.sendHotTemplateUpdate(name, d);
-    }
-  }
-}
-
-function onStyleHotUpdate(pages, name, deltas) {
-  for (let d of deltas) {
-    for (let request of pages) {
-      request.page.sendHotStyleUpdate(name, d);
-    }
-  }
-}
 
 function deprecateProperty(property, object, objectAlias, suggestionTest) {
   if (Reflect.has(object, property)) {
@@ -49,170 +33,153 @@ function getInitialState(schema) {
   };
 }
 
-// function validateSchema(schema) {
-//   if (!schema.src) throw new Error('Schema is missing src folder.');
-// }
+function validateSchema(schema) {
+  if (!schema.src) throw new Error('Schema is missing src folder.');
+  return schema;
+}
+
+const DEFAULT_SCHEMA = {
+  routes: { index: { method: "get" } },
+  publicFolder: path.join(getProgramDirectory(), 'public'),
+  engine: "hyper",
+  port: 8585,
+  public: false,
+  deploy: false,
+};
+
+const extendDefaultSchema = (schemaOptions) => {
+  return Object.assign(
+    {}, DEFAULT_SCHEMA, schemaOptions
+  );
+};
+
+const EVENTS = {
+  onStateChange: undefined,
+  onAppStart: undefined,
+  onAppShutdown: undefined,
+  onConnect: undefined,
+  onDisconnect: undefined,
+}
 
 export default class HyperApp {
   
-  constructor(schema) {
-    validateSchema(schema);
-    this.schema = schema;
+  // event handlers
+  subscribers = {
+    onStateChange: [],
+    onAppStart: [],
+    onAppShutdown: [],
+    onConnect: [],
+    onDisconnect: [],
+  };      
+
+  schema = {};
+  server;         // will be 
+  url;
+  clients = [];
+  hotPages = [];
+
+  constructor(schema, options = { events: EVENTS }) {
+
+    // bind event handlers supplied using options
+    Object.keys(options.events)
+      .filter(k => Reflect.has(this.subscribers, k))
+      .forEach(k => this.subscribers[k].push(options.events[k]))
 
 
-    // TODO rewrite this and declare the method here
-    this.requestPage = requestPage.bind(this);
-  }
+    this.schema = validateSchema(extendDefaultSchema(schema));
 
-  static create(schema) {
-    return new Promise(resolve => {
 
-      // create app state
-      hyperApp.state = getInitialState(schema); 
+    this.state = getInitialState(schema); 
 
-      hyperApp.clients = [];
-      hyperApp.updateState = (partial) => {
-        console.log(chalk.yellow('hyperApp.updateState(partial) is called'))
+    // HyperServer bootstraps:
+    // - express app
+    // - static content
+    // - hot-reloads
+    // - route handlers
+    this.hyperServer = new HyperServer(this, {
+      onStart: (serverInfo) => {
+        this.url = serverInfo.url;
+        this.notify('appstart');
       }
-
-
-      // Express app
-      const express = hyperApp.express = createExpressApp();
-
-      // VIEWS
-      hyperApp.hotPages = [];
-      
-      hyperApp.staticLoaders = makeStaticFileLoaders(schema, {
-
-        onTemplateHotUpdate: (name, deltas) =>
-          onTemplateHotUpdate(hyperApp.hotPages, name, deltas),
-
-        onStyleHotUpdate: (name, deltas) =>
-          onStyleHotUpdate(hyperApp.hotPages, name, deltas),
-
-      });
-            
-      const schemaEngine = createViewEngine(hyperApp, schema);
-
-      // ROUTES
-      const schemaRouteHandler = (route, req, res) => {
-        schemaEngine.render(route, req, res);
-      };
-      const staticRouteHandler = (route, req, res) => {
-        res.render(req.path + "index", { request: req });
-      };
-      const routeHandler = schemaEngine ? schemaRouteHandler
-        : staticRouteHandler;
-
-      const routes = schema.routes || { index: { method: "get" } };
-      for (let key of Object.keys(routes)) {
-        const route = routes[key];
-        const pathFromKey = key === "index" ? "/" : "/" + key;
-        const method = route.method || "get";
-        const serverMethod = express[method];
-        serverMethod.call(express, pathFromKey, (req, res) => {
-          routeHandler(route, req, res);
-        });
-      }
-
-      // IT SHOULD LOAD FROM WORKING DIRECTORY NOT THE PROGRAM DIRECTORY
-
-      // EXPOSE PUBLIC FOLDER WITH STATIC CONTENT
-      const c1 = process.cwd();
-      const c2 = schema.publicFolder||'/public';
-      
-      const parentFolder = c1.slice(0, c1.length - 3);
-      const pathToPublic = path.resolve(path.join(parentFolder, c2));
-
-      console.log('-', chalk.rgb(250,128,30)(`Public folder set to ${pathToPublic}`));
-      express.use(expressApp.static(pathToPublic));
-
-      // CATCH-ALL ROUTE
-      express.get("*", (req, res) => {
-        console.log("NOT FOUND", req.method, chalk.red(req.originalUrl));
-        res.status(404).send("Nothing here");
-      });
-
-      hyperApp.updateState = (partial) => {
-        hyperApp.notify("appstart", hyperApp); 
-      };
-
-      //////////////////////////////////////////////////////////////////////////  <-- LISTEN, AND GET HTTP SERVER
-      hyperApp.server = express.listen(schema.port, () => {
-        
-        console.group(chalk.green(`HyperApp started at:`, 
-          chalk.white(`http://localhost:${schema.port}`)));
-        
-        // Resolve for localhost
-        if (!schema.public) { 
-          hyperApp.notify("appstart", hyperApp); 
-          resolve(hyperApp);
-        }
-
-        // Resolve for remote host
-        if (schema.public) {
-          console.log(chalk.yellow(`creating secure external tunnel...`));
-          const host = schema.host || schema.H;
-          const tokens = [
-            "ngrok",
-            "http",
-            host ? "--host-header=" + host : null,
-            host ? "--hostname=" + host : null,
-            schema.port,
-          ];
-          
-          const args = tokens.filter((t) => !!t).join(" ");
-
-          // execute NGrok command
-          try {
-            exec(args, (err, stdout, stderr) => {
-              if (stdout) { console.log(stdout); }
-              if (err || stderr) { throw new Error(err || stderr); }
-            });  
-            hyperApp.notify("appstart", hyperApp);
-            resolve(hyperApp);
-          }
-          catch(err) {
-            inspectErrorStack(err);
-          }
-
-
-        }
-      });
-
-      //////////////////////////////////////////////////////////////////////////  <-- LISTEN, AND GET HTTP SERVER
-      createAppSocket(hyperApp);
-      
-      process.title = "HyperApp";
     });
-  } // end of constructor
+  }
 
+  open(route) {
+
+    return new Promise((resolve, reject) => {
+
+      const page = new Page({
+        app: this,
+        resolve,
+        pageResolved: false,
+        requestId: uuid(),
+        route,
+        sendAction: (data) => { 
+          const msg = "action:" + JSON.stringify(data);
+          scope.ws.send(msg);
+        },
+        sendState: (data) => { 
+          const msg = "state:" + JSON.stringify(data);
+          scope.ws.send(msg) ;
+        },
+      });
   
+      const ws = createPageSocket(app, scope)
+  
+      open(this.url + route).then(resolve, reject);
+    })
+    
+  }
+
+  /** 
+   * Call .updateState(state) with partial state updates. 
+   * State changes (deltas) will be relayed to all connected clients.
+  */
+  updateState = (partial) => {
+    console.log(chalk.yellow('hyperApp.updateState(partial) is called'));
+    // TODO: propagate to all clients
+    hyperApp.notify("AppStart", hyperApp); 
+  }
+
+  onStateChange(listener) {
+    this.subscribers["onStateChange"].push(listener);
+    return this;
+  }
   onAppStart(listener) {
-    on["appstart"] = listener;
-  }
-  onPageOpen(listener) {
-    on["pageopen"] = listener;
-  }
-  onConnect(listener) {
-    on["connect"] = listener;
-  }
-  onMessage(listener) {
-    on["message"] = listener;
-  }
-  onDisconnect(listener) {
-    on["disconnect"] = listener;
-  }
-  onPageClose(listener) {
-    on["pageclose"] = listener;
+    this.subscribers["onAppStart"].push(listener);
+    return this;
   }
   onAppShutdown(listener) {
-    on["appshutdown"] = listener;
+    this.subscribers["onAppShutdown"].push(listener);
+    return this;
   }
-
+  onConnect(listener) {
+    this.subscribers["onConnect"].push(listener);
+    return this;
+  }
+  onDisconnect(listener) {
+    this.subscribers["onDisconnect"].push(listener);
+    return this;
+  }
+  // onPageOpen(listener) {
+  //   this.subscribers["onPageOpen"].push(listener);
+  //   return this;
+  // }
+  // onPageClose(listener) {
+  //   this.subscribers["onPageClose"].push(listener);
+  //   return this;
+  // }
+  // onMessage(listener) {
+  //   this.subscribers["onMessage"].push(listener);
+  //   return this;
+  // }
+    
   notify(event, ...args) {
-    if (Reflect.has(on, event)) {
-      on[event](...args);
+    if (Reflect.has(this.subscribers, event)) {
+      const listeners = subscribers[event];
+      listeners.forEach(callback => {
+        callback(...args);
+      })
     }
   }
 } // HyperApp

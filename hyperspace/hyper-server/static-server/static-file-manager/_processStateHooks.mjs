@@ -10,7 +10,7 @@ function createNewElementId(prefix) {
     return id;
 }
 
-export function processStateHooks(view, state) {
+export function _processStateHooks(view, state) {
 
     let mergedView = view;
 
