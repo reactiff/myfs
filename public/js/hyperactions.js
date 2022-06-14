@@ -20,12 +20,12 @@ var createHyperActions = function (wsProxy) {
       return t;
     }
     
-    // function useStateData(key) {
-    //   if (!Reflect.has(state, key)) { throw new Error("Invalid state key"); }
-    //   const d = state[key];
-    //   if (isNullish(d)) { return []; }
-    //   return asArray(d);
-    // }
+    function useStateData(key) {
+      if (!Reflect.has(state, key)) { throw new Error("Invalid state key"); }
+      const d = state[key];
+      if (isNullish(d)) { return []; }
+      return asArray(d);
+    }
     
     function useRawData(d) {
       if (isNullish(d)) { return []; }

@@ -7,7 +7,7 @@ import inspectErrorStack from "utils/inspectErrorStack.mjs";
 import chalk from "chalk";
 import { processStateHooks } from "./processStateHooks.mjs";
 
-class staticHotUpdate {
+class StaticHotUpdate {
 
   constructor(filename, schema) {
     
@@ -102,4 +102,4 @@ class staticHotUpdate {
   }
 }
 
-export default staticHotUpdate;
+export default StaticHotUpdate;

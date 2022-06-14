@@ -7,11 +7,20 @@ import inspectErrorStack from "utils/inspectErrorStack.mjs";
 export default function webbify(schema) {
   return new Promise((resolve, reject) => {
  
-    // 1. Create HyperApp instance
+    // 1. Create HyperApp instance using schema configuration
     
+    const app = new HyperApp(schema);
+
+    const page = app.request
+
     createApp(schema)
       .catch(inspectErrorStack)
       .then((hApp) => {
+
+        // App initialized
+        debugger
+
+        // 2. Open a request and get back a page instance
 
         // Open a page request
         hApp.requestPage("/")

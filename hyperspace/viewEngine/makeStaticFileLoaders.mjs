@@ -1,7 +1,8 @@
 import path from "path";
 import fs from "fs";
-import staticHotUpdate from "./staticHotUpdate.mjs";
+import StaticHotUpdate from "./StaticHotUpdate.mjs";
 import chalk from "chalk";
+
 export function makeStaticFileLoaders(schema, handlers) {
 
   if (!schema.src) { return; }
@@ -25,20 +26,20 @@ export function makeStaticFileLoaders(schema, handlers) {
         ...schema, 
         hotUpdate: false
       };
-      loaders.view = new staticHotUpdate(file, options); 
+      loaders.view = new StaticHotUpdate(file, options); 
 
-      // do not hotupdate base html
+      // do not hot-update base html
     } else if (file.endsWith(".html")) {
       htmlCount++;
 
-      const loader = new staticHotUpdate(file, schema);
+      const loader = new StaticHotUpdate(file, schema);
       loader.onUpdate(handlers.onTemplateHotUpdate);
       loaders.templates.push({ name: baseName, loader });
 
     } else if (file.endsWith(".css")) {
       cssCount++;
 
-      const loader = new staticHotUpdate(file, schema);
+      const loader = new StaticHotUpdate(file, schema);
       loader.onUpdate(handlers.onStyleHotUpdate);
       loaders.styles.push({ name: baseName, loader });
 

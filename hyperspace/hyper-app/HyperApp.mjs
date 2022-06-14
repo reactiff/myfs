@@ -1,16 +1,17 @@
-import expressApp from "express";
+import createExpressApp from "express";
 import path from "path";
 import chalk from "chalk";
-import { createViewEngine } from "./viewEngine/createViewEngine.mjs";
+import { createViewEngine } from "../viewEngine/createViewEngine.mjs";
 import { exec } from "child_process";
-import { makeStaticFileLoaders } from "./viewEngine/makeStaticFileLoaders.mjs";
-import inspectErrorStack from "../utils/inspectErrorStack.mjs";
-import fnOrValue from "../utils/fnOrValue.mjs";
+import { makeStaticFileLoaders } from "../viewEngine/makeStaticFileLoaders.mjs";
+import inspectErrorStack from "utils/inspectErrorStack";
+import fnOrValue from "utils/fnOrValue";
 
 // Split instance methods to be bound
 import createAppSocket from "./createAppSocket.mjs";
-import requestPage from './requestPage.mjs';
+import requestPage from '../requestPage.mjs';
 import { randomUUID } from "crypto";
+import { validateSchema } from "./json-schema.mjs";
 
 const on = {};
 
@@ -48,24 +49,23 @@ function getInitialState(schema) {
   };
 }
 
-function preflightCheck(schema) {
-  if (!schema.src) throw new Error('Schema is missing src folder.');
-}
+// function validateSchema(schema) {
+//   if (!schema.src) throw new Error('Schema is missing src folder.');
+// }
 
-const _constructorId = randomUUID();
-const _constructorError = 'Use HyperApp.create(schema) instead of new HyperApp()';
 export default class HyperApp {
-  constructor() {
-    if (!arguments.length||arguments[0]!==Symbol.for(_constructorId)) throw new Error(_constructorError); 
+  
+  constructor(schema) {
+    validateSchema(schema);
+    this.schema = schema;
+
+
+    // TODO rewrite this and declare the method here
     this.requestPage = requestPage.bind(this);
   }
 
   static create(schema) {
     return new Promise(resolve => {
-      preflightCheck(schema);
-
-      const hyperApp = new HyperApp(Symbol.for(_constructorId));
-      hyperApp.schema = schema;
 
       // create app state
       hyperApp.state = getInitialState(schema); 
@@ -77,7 +77,7 @@ export default class HyperApp {
 
 
       // Express app
-      const express = hyperApp.express = expressApp();
+      const express = hyperApp.express = createExpressApp();
 
       // VIEWS
       hyperApp.hotPages = [];

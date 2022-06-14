@@ -6,29 +6,27 @@ import inspectErrorStack from "utils/inspectErrorStack.mjs";
 // this file doesn't know anything about the business of ls command
 // or its webService henchmen.
 
+const defaultOptions = {
+  // view: schemaOptions.view,
+  routes: null,
+  engine: "hyper",
+  port: 8585,
+  public: false,
+  deploy: false,
+};
 
-const mergeOptions = (schemaOptions) => {
+const extendDefaultOptions = (schemaOptions) => {
   const options = Object.assign(
-    {}, 
-    {
-      view: schemaOptions.view,
-      routes: null,
-      engine: "hyper",
-      port: 8585,
-      public: false,
-      deploy: false,
-    },
-    schemaOptions
+    {}, defaultOptions, schemaOptions
   );
   return options;
 };
 
 export default function createApp(schemaOptions = {}) {
   return new Promise((resolve) => {
-    const appSchema = Object.assign({}, mergeOptions(schemaOptions));
-    Object.assign(appSchema, schemaOptions);
+    const appSchema = extendDefaultOptions(schemaOptions);
     HyperApp.create(appSchema)
-      .then(hApp => resolve(hApp))
+      .then(resolve)
       .catch(inspectErrorStack);
   });
 }
