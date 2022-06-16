@@ -1,50 +1,18 @@
-import createApp from "hyperspace/createApp.mjs";
-import chalk from "chalk";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
+import HyperApp from "./hyper-app/HyperApp.mjs";
 
 // CURRENTYLY, WEBBIFY IS LS'S BITCH AND WORKS ONLY FOR IT
 
 export default function webbify(schema) {
   return new Promise((resolve, reject) => {
- 
-    // 1. Create HyperApp instance using schema configuration
-    
-    const app = new HyperApp(schema);
+    (async () => {
+      const app = await HyperApp.create(schema).catch(inspectErrorStack);
+      const page = await app.open('/').catch(inspectErrorStack);
 
-    app.onStart((...args) => {
       debugger
-      console.log(...args);
-    })
 
-    await app.start();
-    
-    await app.open('/');
-
-    createApp(schema)
-      .catch(inspectErrorStack)
-      .then((hApp) => {
-
-        // App initialized
-        debugger
-
-        // 2. Open a request and get back a page instance
-
-        // Open a page request
-        hApp.requestPage("/")
-          .catch(inspectErrorStack)
-          .then((page) => {
-
-            page.onError((msg) => {
-              console.log(chalk.red(msg))
-            });
-
-            page.onAction(action => console.log("Action received", action));
-            
-            page.initialize();
-
-            resolve([ page, hApp ]);
-          });
-      });
+      resolve([ page, app ])
+    })();
   });
 }
 

@@ -1,3 +1,5 @@
+import mergeTemplateAndState from "./mergeTemplateAndState.mjs";
+
 export default class HyperViewEngine {
     constructor(hyperServer) {
         this.hyperServer = hyperServer;
@@ -6,15 +8,16 @@ export default class HyperViewEngine {
     render(route, req, res) {
 
         // TODO currently defaults to index.html for any route
-        const index = this.hyperServer.static.indexHtml;
+        const indexView = this.hyperServer.static.indexHtml;
 
-        if (!index)
+        if (!indexView)
             throw new Error(
                 "Could not find any views to load, are you sure you are in the right folder?  Ideally you want to be inside /src which should be adjacent to /public, they are siblings."
             );
 
-        const template = index.getContent();
-        const content = _processStateHooks(template, this.hyperServer.app.state);
+        const template = indexView.getContent();
+        const content = mergeTemplateAndState(template, this.hyperServer.app.state);
+        
         res.setHeader("Content-Type", "text/html; charset=UTF-8");
         res.setHeader("Content-Length", Buffer.byteLength(content));
 

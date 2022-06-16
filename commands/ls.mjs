@@ -22,14 +22,24 @@ async function browseResults(results, opts) {
     title: "Search Results",
     src: path.resolve("hyperspace/static/ls"),
     hotUpdate: true,
+    routes: { 
+      "/": {},
+      "/alt-view": {
+        method: 'get',
+        render: (req, res) => {
+          res.status(200).send('Alt View');
+        }
+      }
+    }
   };
   
   const data = results.items
     .map(i => ({ ...{ title: i.name }, ...i.stat }));
   
-  const p = await webbify(schema).catch(inspectErrorStack);
+  const [page, app] = await webbify(schema).catch(inspectErrorStack);
 
-  p.render({ 
+  debugger
+  page.render({ 
     target: "main", 
     template: "item", 
     data 

@@ -4,7 +4,6 @@ import minimatch from "minimatch";
 import { getProgramDirectory } from "../bin/getProgramDirectory.mjs";
 
 function printSchemaValidationErrors(error) {
-    debugger;
       
     console.log(chalk.bgHex("#880000").bold.whiteBright(error.message));
   

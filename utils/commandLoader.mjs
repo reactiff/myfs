@@ -28,7 +28,6 @@ function loadModule(command, context) {
         resolve(module);
       })
       .catch(ex => {
-        debugger // ERROR
         inspectErrorStack(ex)
       });
   });

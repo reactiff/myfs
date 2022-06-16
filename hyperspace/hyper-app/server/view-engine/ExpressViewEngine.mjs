@@ -1,3 +1,6 @@
+import path from "path";
+import chalk from "chalk";
+
 export default class ExpressViewEngine {
     constructor(hyperServer) {
         this.hyperServer = hyperServer;
@@ -23,7 +26,7 @@ export default class ExpressViewEngine {
             express.use("/static", staticPath);
         }
 
-        // WHAT IS ALL THIS?
+        // TODO resolve: WHAT IS ALL THIS?
 
         const c1 = process.cwd();
         const c2 = schema.publicFolder;
@@ -32,7 +35,7 @@ export default class ExpressViewEngine {
         const pathToPublic = path.resolve(path.join(parentFolder, c2));
 
         console.log('-', chalk.rgb(250,128,30)(`Public folder set to ${pathToPublic}`));
-        express.use(expressApp.static(pathToPublic));
+        express.use(express.static(pathToPublic));
     }
 
     render(route, req, res) {

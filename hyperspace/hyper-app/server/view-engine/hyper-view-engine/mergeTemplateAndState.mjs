@@ -1,5 +1,4 @@
-import _ from 'lodash';
-import {JSDOM} from 'jsdom';
+import { JSDOM } from 'jsdom';
 
 const { document } = (new JSDOM(`...`)).window;
 
@@ -10,13 +9,17 @@ function createNewElementId(prefix) {
     return id;
 }
 
-export function _processStateHooks(view, state) {
+export default function mergeTemplateAndState(view, state) {
 
     let mergedView = view;
 
     let matches;
     do {
-        const bindingTag = /\{\$\.([a-zA-Z0-9\.]+?)\}/gmi;
+
+        // const bindingTag = /\{\$\.([a-zA-Z0-9\.]+?)\}/gmi; // PREVIOUS REGEX
+        const bindingTag = /\{\$\.([a-zA-Z0-9\\.]+?)\}/gmi; // NEW REGEX.  TEST IT.
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>^ inserted an extra back slash here, es-lint was complaining that escaping isn't necessary here...
+        
         matches = [...mergedView.matchAll(bindingTag)];
 
         if (matches.length > 0) {

@@ -1,6 +1,8 @@
-import StaticFileManager from "./hot-reloader/StaticFileManager.mjs";
+import fs from "fs";
+import path from "path";
+import StaticFileManager from "./file-watcher/StaticFileWatcher.mjs";
 
-export default class StaticServer {
+export default class StaticLoader {
 
   hyperServer; // parent object
   indexHtml;      // // this one does not get hot updated

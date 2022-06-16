@@ -2,7 +2,6 @@ import path from "path";
 import fs from "fs";
 import { Diff } from "diff";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
-import { _processStateHooks } from "./_processStateHooks.mjs";
 import { assert } from "console";
 
 function makeAssertions(filename, schema, options) {
@@ -12,6 +11,11 @@ function makeAssertions(filename, schema, options) {
 
  // these get hot-updated
 export default class StaticFileManager {
+
+  notifyChange;
+  options;
+  fullPath;
+  rawContent;
 
   constructor(filename, schema, options) {
     makeAssertions(filename, schema, options);
@@ -27,11 +31,8 @@ export default class StaticFileManager {
     this.notifyChange = options.onChange;
     this.options = options;
     this.fullPath = path.resolve(path.join(this.pathTo, filename));
-
-    const rawHTML = fs.readFileSync(this.fullPath, "utf8");
-    const stateHookedHTML = _processStateHooks(rawHTML)
-    this.content = stateHookedHTML;
-
+    this.rawContent = fs.readFileSync(this.fullPath, "utf8");
+    
     if (options.hotUpdate) {
       const _this = this;
       fs.watchFile(_this.fullPath, {
@@ -41,11 +42,14 @@ export default class StaticFileManager {
           // FILE CHANGED
           console.log(filename + ' has changed and was sent to the browser');
           
-          _this.defaultReload(_this.fullPath)
+          _this.defaultReload()
             .catch(inspectErrorStack)
             .then(newContent => {
           
-              _this.defaultDiff(_this.content, newContent)
+              _this.prevContent = _this.rawContent;
+              _this.rawContent = newContent;
+
+              _this.defaultDiff(_this.prevContent, newContent)
                 .catch(inspectErrorStack)
                 .then(deltas => {
 
@@ -59,19 +63,18 @@ export default class StaticFileManager {
     }
   }
 
-  defaultReload(fullPath) {
+  defaultReload() {
     return new Promise(resolve => {
-      const newContent = fs.readFileSync(fullPath, "utf8");
-      resolve(newContent);
+      resolve(fs.readFileSync(this.fullPath, "utf8"));
     });
   }
 
-  defaultDiff(prev, current) {
+  defaultDiff(prev, curr) {
     return new Promise(resolve => {
-      if (prev !== current) {
-        resolve([current]);
-      }
-      const differences = Diff.diffLines(prev, current, {
+      // if (prev !== curr) {
+      //   resolve([curr]);
+      // }
+      const differences = Diff.diffLines(prev, curr, {
         ignoreCase: false,
         ignoreWhitespace: false,
         newlineIsToken: true,
@@ -81,7 +84,7 @@ export default class StaticFileManager {
   }
 
   getContent() {
-    return this.content;
+    return this.rawContent;
   }
 }
 

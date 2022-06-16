@@ -1,6 +1,6 @@
 // JSON Schema Validation with AJV
 import Ajv from "ajv";
-import inspectErrorStack from "utils/inspectErrorStack";
+import inspectErrorStack from "utils/inspectErrorStack.mjs";
 const ajv = new Ajv({ allErrors: true }); // options can be passed, e.g. {allErrors: true}
 
 ////////////////////////////////////////////
@@ -48,11 +48,11 @@ const HyperRouteSchema = {
 const HyperAppSchema = {
   ...t.object,
   properties: {
-    name: { ...t.string },
+    name: { ...t.string, ...pa.nullable },
     title: { ...t.string, ...pa.nullable },
-    view: { ...t.string }, // filename
-    style: { ...t.string }, // filename
-    src: { ...t.string }, // path to sources files (html, css)
+    view: { ...t.string, ...pa.nullable }, // filename
+    style: { ...t.string, ...pa.nullable }, // filename
+    src: { ...t.string, ...pa.nullable }, // path to sources files (html, css)
     // global: {
     //   ...t.object,
     //   properties: {
@@ -68,6 +68,7 @@ const HyperAppSchema = {
     engine: { ...t.string, ...pa.nullable, enum: ["hyper", "pug"] },
     port: { ...t.integer, default: 8484 },
     public: { ...t.boolean, default: false },
+    publicFolder: { ...t.string, ...pa.nullable },
     host: { ...t.string, ...pa.nullable },
     deploy: { ...t.boolean, default: false },
     hotUpdate: { ...t.boolean, default: false }, // enable hot updates for static content
@@ -75,10 +76,15 @@ const HyperAppSchema = {
   },
   additionalProperties: false,
 };
+
 ////////////////////////////////////////////
 // VALIDATE SCHEMA
 const compiledSchemaChecker = ajv.compile(HyperAppSchema);
+
 export const validateSchema = (schema) => {
+  
+  if (!schema.src) throw new Error('Schema is missing src folder.');
+
   // Validate options against the schema
   let valid;
   try {
@@ -93,4 +99,7 @@ export const validateSchema = (schema) => {
     error.list = compiledSchemaChecker.errors;
     throw error;
   }
+
+  return schema;
+
 };
