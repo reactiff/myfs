@@ -4,8 +4,9 @@ import fnOrValue from "utils/fnOrValue.mjs";
 import { getProgramDirectory } from "../../bin/getProgramDirectory.mjs";
 import { validateSchema } from "./json-schema.mjs";
 import Page from "./page/Page.mjs";
-import EventManager from "../EventManager.mjs";
-import HyperServer from "./server/HyperServer.mjs";
+import EventManager from "./EventManager.mjs";
+import HyperServer from "./hyper-server/HyperServer.mjs";
+import HyperAppController from "./HyperAppController.mjs";
 
 function deprecateProperty(property, object, objectAlias, suggestionTest) {
   if (Reflect.has(object, property)) {
@@ -32,11 +33,16 @@ const extendDefaultSchema = (schemaOptions) => {
 };
 
 export default class HyperApp {
+
   schema = {};
+
+  controller;
   hyperServer;         
   url;
+
   clients = [];
   hotPages = [];
+
   constructor(schema, eventHandlers) {
     EventManager.implementFor(this, [ 
       'onStateChange',
@@ -44,9 +50,15 @@ export default class HyperApp {
       'onShutdown',
       'onConnect',
       'onDisconnect',
+      'onReady'
     ], eventHandlers);
     this.schema = validateSchema(extendDefaultSchema(schema));
     this.state = getInitialState(schema); 
+    
+    // controller
+    this.controller = new HyperAppController(this);
+
+    // server
     this.hyperServer = new HyperServer(this, {
       onStart: (serverInfo) => {
         this.url = serverInfo.url;
@@ -54,6 +66,7 @@ export default class HyperApp {
       }
     });
   }
+
   // static factory method
   static create(schema, eventsHandlers) {
     return new Promise((resolve, reject) => {

@@ -1,7 +1,7 @@
 import {assert} from 'utils/assert.mjs';
 import { v4 as uuid } from 'uuid';
-import EventManager from '../../EventManager.mjs';
-import PageController from './controller/PageController.mjs';
+import EventManager from '../EventManager.mjs';
+import PageController from './PageController.mjs';
 
 // Page 
 
@@ -30,12 +30,16 @@ export default class Page {
   pageResolved = false;
 
   constructor(options = { app: undefined, route: '' } ) {
+    const _this = this;
     this.app = options.app;
     this.route = options.route;
     EventManager.implementFor(this, [ 
       'onError',
       'onOpen',
       'onClose',
+
+      'onClientConnect',
+      'onClientDisconnect',
       
       'onMessageSent',
       'onActionSent',
@@ -59,10 +63,12 @@ export default class Page {
       onReady: () => {
         this.init();
         this.notify('onReady', this);
-      } 
+      },
+      onClientConnect: (remote) => {
+        _this.app.hotPages.push({ page: _this, remote }); //   <-- Remote connection registered for hot updates
+        this.notify('onClientConnect', this);
+      }
     });
-
-    
   }
   
   addTemplate(name, template) { 
@@ -123,6 +129,15 @@ export default class Page {
   getState() {
     return Object.assign({}, this.app.getState(), this.state);
   }
+
+  // CONFIG
+
+  setConfig(config) {
+    this.config = config;
+    this.sendState(this, config);
+    this.notify("onConfigChange", this); 
+  }
+
   
 }
 

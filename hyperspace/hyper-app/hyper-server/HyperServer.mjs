@@ -1,21 +1,24 @@
 import expressApp from "express";
-import HyperViewEngine from "./view-engine/hyper-view-engine/HyperViewEngine.mjs";
-import ExpressViewEngine from "./view-engine/ExpressViewEngine.mjs";
-import StaticLoader from "./static/StaticLoader.mjs";
-import HyperServerSocket from "./socket/HyperServerSocket.mjs";
 import chalk from "chalk";
 import { exec } from "child_process";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
-import EventManager from "../../EventManager.mjs";
+import EventManager from "../EventManager.mjs";
+
+import HyperViewEngine from "./view-engine/HyperViewEngine.mjs";
+import StaticLoader from "./static/StaticLoader.mjs";
+import HyperSocketServer from "./socket-server/HyperSocketServer.mjs";
 
 export default class HyperServer {
   
-  app; // parent object
+  app;          // parent object
+
   express;
   static;
-  viewEngine; // request handler
-  socket;
+   
   httpServer;
+  socketServer;
+
+  viewEngine; 
 
   constructor(app, options = {}) {
 
@@ -33,17 +36,14 @@ export default class HyperServer {
     this.static = new StaticLoader(this);
 
     // for hyper engine, create request handler
-    this.viewEngine =
-      app.schema.engine === "hyper"
-        ? new HyperViewEngine(this)
-        : new ExpressViewEngine(this);
+    this.viewEngine = new HyperViewEngine(this)
 
     this.initRoutes(app.schema);
 
     this.httpServer = this.createHttpServer(app.schema);
 
     // last thing
-    this.socket = new HyperServerSocket(this);
+    this.socketServer = new HyperSocketServer(this);
 
     process.title = app.schema.name || "HyperApp";
   }

@@ -1,5 +1,5 @@
 import WebSocket from "faye-websocket";
-import EventManager from "../../../EventManager.mjs";
+import EventManager from "../EventManager.mjs";
 
 function processPageReadyEvent(page, controller, e) {
   const event = e.data.slice(7);
@@ -32,9 +32,9 @@ function parseIncomingMessage(page, controller, e) {
 }
 
 // Page WebSocket
-export default class PageController {
+export default class HyperAppController {
 
-  page;
+  app;
   socket;
 
   constructor(page, options = {}) {
@@ -48,7 +48,7 @@ export default class PageController {
 
     this.page = page;
 
-    this.url = `ws://localhost:${this.page.app.schema.port + this.page.route}?role=controller`;
+    this.url = `ws://localhost:${this.page.app.schema.port + this.page.route}?role=app-controller`;
 
     this.socket = new WebSocket.Client(this.url);
 
