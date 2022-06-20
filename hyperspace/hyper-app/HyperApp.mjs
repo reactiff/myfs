@@ -7,19 +7,11 @@ import Page from "./page/Page.mjs";
 import EventManager from "./EventManager.mjs";
 import HyperServer from "./hyper-server/HyperServer.mjs";
 import HyperAppController from "./HyperAppController.mjs";
-
-function deprecateProperty(property, object, objectAlias, suggestionTest) {
-  if (Reflect.has(object, property)) {
-    console.warn(`${objectAlias + "." || "Property "}${property} is deprecated. ${suggestionTest}`)
-  }
-}
+import APIControllerBase from "./APIControllerBase.mjs";
 
 function getInitialState(schema) {
   const suggestion = 'It works now, but in the future use schema.state instead.';
-  deprecateProperty('hyperState', schema, 'HyperAppSchema', suggestion);
-  deprecateProperty('appState', schema, 'HyperAppSchema', suggestion);
-  deprecateProperty('initialState', schema, 'HyperAppSchema', suggestion);
-  const state = schema.state || schema.hyperState || schema.initialState || schema.appState;
+  const state = schema.state;
   return {
     ...fnOrValue(state),
     title: schema.title,
@@ -32,7 +24,7 @@ const extendDefaultSchema = (schemaOptions) => {
   );
 };
 
-export default class HyperApp {
+export default class HyperApp extends APIControllerBase {
 
   schema = {};
 
@@ -44,14 +36,19 @@ export default class HyperApp {
   hotPages = [];
 
   constructor(schema, eventHandlers) {
-    EventManager.implementFor(this, [ 
-      'onStateChange',
-      'onStart',
-      'onShutdown',
-      'onConnect',
-      'onDisconnect',
-      'onReady'
-    ], eventHandlers);
+
+    super({
+      events: [ 
+        'onStateChange',
+        'onStart',
+        'onShutdown',
+        'onConnect',
+        'onDisconnect',
+        'onReady'
+      ],
+      eventHandlers
+    });
+    
     this.schema = validateSchema(extendDefaultSchema(schema));
     this.state = getInitialState(schema); 
     
@@ -77,7 +74,12 @@ export default class HyperApp {
       });
     })
   }
-  
+
+  // OVERRIDES
+  getName() { return 'AppController'}
+  getWsUrl() { return `ws://localhost:${this.app.schema.port}?role=app-controller` }
+
+
   /**
    * Creates a request for the resource at route and returns an instance of Page object.
    * @param {*} route 
@@ -101,7 +103,6 @@ export default class HyperApp {
   ////////////////////////////////////////////////////////////////////////// API METHODS
 
   // STATE
-  
   /** Overwrites existing state with new one. */
   setState(state) {
     this.state = state;
@@ -116,6 +117,13 @@ export default class HyperApp {
   }
   getState() { return this.state; }  
 
+  // CONFIG
+  setConfig(config) {
+    this.config = config;
+    this.sendState(this, config);
+    this.notify("onConfigChange", this); 
+  }
+  getConfig() { return this.config; }  
 
 } 
 

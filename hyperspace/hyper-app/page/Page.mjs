@@ -1,144 +1,103 @@
 import {assert} from 'utils/assert.mjs';
-import { v4 as uuid } from 'uuid';
-import EventManager from '../EventManager.mjs';
-import PageController from './PageController.mjs';
+import APIControllerBase from '../APIControllerBase.mjs';
+import SocketManager from '../SocketManager.mjs';
 
 // Page 
 
-function sendSocketMessage(page, prefix, data) {
-  const message = prefix + ':' + JSON.stringify(data);
-  page.controller.socket.send(message);
-  page.notify('onMessageSent', message);
-}
+export default class Page extends APIControllerBase {
 
-function sendAction(page, data) { 
-  sendSocketMessage(page, 'action', data);
-  page.notify('onActionSent', data);
-}
-
-function sendState(page, data) { 
-  sendSocketMessage(page, 'state', data);
-  page.notify('onStateSent', data);
-}
-
-export default class Page {
+  // DEPRECATED
+  // pageResolved = false;
 
   app;
   route;
-  state;
-  requestId;
-  pageResolved = false;
+  _options;
+
+  // declared in APIControllerBase
+  socket;
+
+  remoteClients = [];
 
   constructor(options = { app: undefined, route: '' } ) {
-    const _this = this;
+
+    super({ 
+      parent: options.app,
+      events: [ 
+        'onClientConnect',
+        'onClientDisconnect',
+        'onReady',
+        'onStateChange',
+        'onConfigChange',
+      ], 
+      eventHandlers: { ...options.events, ...options.eventHandlers, ...options }
+    });
+
+    this._options = options;
+
     this.app = options.app;
     this.route = options.route;
-    EventManager.implementFor(this, [ 
-      'onError',
-      'onOpen',
-      'onClose',
-
-      'onClientConnect',
-      'onClientDisconnect',
-      
-      'onMessageSent',
-      'onActionSent',
-      'onStateSent',
-
-      'onMessageReceived',
-      'onActionReceived',
-      'onStateReceived',
-
-      'onReady',
-      'onStateChange',
-      'onTemplateAdded',
-      'onTemplateHotUpdate',
-      'onStyleHotUpdate',
-    ], options.events, options.eventHandlers, options);
-
-    this.requestId = uuid();
-
-    // controller
-    this.controller = new PageController(this, { 
-      onReady: () => {
-        this.init();
-        this.notify('onReady', this);
-      },
-      onClientConnect: (remote) => {
-        _this.app.hotPages.push({ page: _this, remote }); //   <-- Remote connection registered for hot updates
-        this.notify('onClientConnect', this);
-      }
+    
+    // socket 
+    this._socket = new SocketManager(this, { 
+      onOpen: this.onSocketOpen,
+      // onClose: this.onSocketClose,
+      onClientConnect: this.onSocketClientConnect,
+      onClientDisconnect: this.onSocketClientDisconnect,
     });
   }
   
-  addTemplate(name, template) { 
-    sendAction(this, { action: "addTemplate", name, template }); 
-    this.notify('onTemplateAdded', name, template);
-  }
+  // OVERRIDES
+  getName() { return 'PageController'}
+  getWsUrl() { return `ws://localhost:${this.app.schema.port + this.page.route}?role=page-controller` }
 
-  sendHotTemplateUpdate(name, delta) {
-    sendAction(this, { action: "updateTemplate", name, delta });
-    this.notify('onTemplateHotUpdate', name, delta);
-  }
+  // SOCKET EVENT HANDLERS
+  onSocketOpen(e) { this.init(); this.notify('onReady', this); }
   
-  sendHotStyleUpdate(name, delta) {
-    sendAction(this, { action: "addStyle", name, delta });
-    this.notify('onStyleHotUpdate', name, delta);
+  onSocketClientConnect(e) {
+    this.notify('onClientConnect', this);
   }
-
+    
   init() {
+
     const { templates, styles } = this.app.hyperServer.static;
+
     Object.values(styles).forEach(s => {
       this.sendHotStyleUpdate(s.name, s.getContent())
     });
+
     Object.values(templates).forEach(t => { 
       this.addTemplate(t.name, t.getContent())
     });
-    // 1. Send page state
-    sendState(this, this.getState());
+
+    // 1. set initial page state
+    if (this._options.state) {
+      this.setState(this._options.state);
+    }
+    
     // 2. then the views
-    this.render(this.app.schema.render),
+    // this.render(this.app.schema.render),
+
     // ready!
-    this.updateState({ appReady: true });
+    // this.updateState({ appReady: true });
     
   }
 
-  render(views) {
-    debugger
-    assert(Array.isArray(views), "it must be an array");
-    views.forEach(v => {
-      const { data, target, template } = v;
-      sendAction(this, { action: "render", data, target, template });
-    });
-  }
+  // TODO process hooks and render
+
+  // processHooks() {
+    
+  //   debugger
+
+  //   assert(Array.isArray(views), "it must be an array");
+  //   views.forEach(v => {
+  //     const { data, target, template } = v;
+  //     this.sendAction('render', data, target, template);
+  //   });
+  // }
   
   ////////////////////////////////////////////////////////////////////////// API METHODS
 
-  // STATE
 
-  setState(state) {
-    this.state = state;
-    this.sendState(this, state);
-    this.notify("onStateChange", this); 
-  }
-
-  updateState(partial) {
-    this.setState(Object.assign({}, this.state, partial));
-  }
-
-  getState() {
-    return Object.assign({}, this.app.getState(), this.state);
-  }
-
-  // CONFIG
-
-  setConfig(config) {
-    this.config = config;
-    this.sendState(this, config);
-    this.notify("onConfigChange", this); 
-  }
-
-  
 }
 
 

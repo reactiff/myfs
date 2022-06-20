@@ -3,13 +3,15 @@ import WebSocket from "faye-websocket";
 import { parseUrlParams } from "./parseUrlParams";
 
 export default class HyperSocketServer {
+
   httpServer;
   connections = {};
+
   appController;
+
   pageControllers = {};
   pageControllerKeys = [];
-  remoteClients = {};
-  remoteClientKeys = [];
+
   messageHistoryEnabled = false;
 
   constructor(hyperServer) {
@@ -42,50 +44,67 @@ export default class HyperSocketServer {
     debugger
     const { req, socket, body, wsID, ws } = args;
     const params = parseUrlParams(event.target.url);
-    const remote = {
+
+    // "REMOTE" represents a web socket of the remote browser client, Page or App controller
+
+    const route = req.url.split("?")[0].split('/').filter(t => t).join('/');
+    const channel = params.channel || 'default';
+
+    const connection = {
       params,
       name: params.name,
       role: params.role,
-      route: req.url.split("?")[0],
+      route,
+      channel,
       url: req.url,
       protocol: ws.protocol,
       target: event.target,
       currentTarget: event.currentTarget,
+      channels: {} // for connections with different channels
     };
-    Object.assign(this.connections[wsID], remote);
-    // REMOTE IS A "WS SERVER" FOR APP OR PAGE CONTROLLER
+    Object.assign(this.connections[wsID], connection);
+
     if (params.role === "app-controller") {
-      this.appController = remote;
+      this.appController = connection;
     } 
     else if (params.role === "page-controller") {
-      if (this.messageHistoryEnabled) remote.messageHistory = [];
-      this.pageControllers[params.name] = remote;
+      if (this.messageHistoryEnabled) connection.messageHistory = [];
+      this.pageControllers[route] = connection;
       this.pageControllerKeys = Object.keys(this.pageControllers);
     } 
     else {
       event.target.clientId = wsID;
-      this.remoteClients[wsID] = remote;
-      this.remoteClientKeys = Object.keys(this.remoteClients);
-      if (remote.messageHistory && remote.messageHistory.length) {
-        remote.messageHistory.forEach(m => remote.target.send(m));
+      const pageController = this.pageControllers[route];
+      if (!pageController) return console.log(chalk.bgRed.white('page ' + route + ' does not exist'));
+      const channel = this.getOrCreateChannel(pageController, channel);
+      channel.remoteClients[wsID] = connection;
+      channel.this.remoteClientKeys = Object.keys(channel.remoteClients);
+      if (connection.messageHistory && connection.messageHistory.length) {
+        connection.messageHistory.forEach(m => connection.target.send(m));
       }
-      const pageName = remote.route;
-      const pageController = this.pageControllers[pageName];
-      if (!pageController) {
-        console.log(chalk.bgRed.white('page name ' + pageName + ' does not exist'));
-        return;
-      }
+      
+      
       pageController.target.send("event:client-connected");
     }
+  }
+
+  getOrCreateChannel(pageController, channel) {
+    if (!Reflect.has(pageController.channels, channel)) {
+      pageController.channels[channel] = {
+        remoteClients: {},
+        remoteClientKeys: []
+      }
+    }
+    return pageController.channels[channel];
   }
   
   connectionClosed(args, event) {
     const { req, socket, body, wsID, ws } = args;
-    const remote = this.connections[wsID];
-    if (remote.role === 'app-controller') {
-      console.log(chalk.yellow(remote.role + " disconnected"));
-    } else if (remote.role === 'page-controller') {
-      console.log(chalk.yellow(remote.role + ` [${event.target.name}] disconnected`));
+    const conn = this.connections[wsID];
+    if (conn.role === 'app-controller') {
+      console.log(chalk.yellow(conn.role + " disconnected"));
+    } else if (conn.role === 'page-controller') {
+      console.log(chalk.yellow(conn.role + ` [${event.target.name}] disconnected`));
     } else {
       delete this.remoteClients[wsID];
       console.log(chalk.yellow(`remote client [${wsID}] disconnected`), wsID);
@@ -107,14 +126,17 @@ export default class HyperSocketServer {
     }
   }
 
-  messageFromAppController(remote, event) {
+  messageFromAppController(app, event) {
     // TODO process messages from App Controller
   }
 
-  messageFromPageController(remote, event) {
+  messageFromPageController(pageController, event) {
     // broadcast the message from page controller to all connected remote clients
-    Object.values(this.remoteClients).forEach(rc => rc.target.send(event.data));
-    if (remote.messageHistory) remote.messageHistory.push(event.data);
+    Object.values(pageController.channels).forEach(channel => {
+      Object.values(channel.remoteClients).forEach(rc => rc.target.send(event.data));
+      if (pageController.messageHistory) pageController.messageHistory.push(event.data);  
+    })
+    
   }
 
   messageFromRemoteClient(remote, event) {

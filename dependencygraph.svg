@@ -24,6 +24,16 @@
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M203,-24C203,-24 582,-24 582,-24 588,-24 594,-30 594,-36 594,-36 594,-252 594,-252 594,-258 588,-264 582,-264 582,-264 203,-264 203,-264 197,-264 191,-258 191,-252 191,-252 191,-36 191,-36 191,-30 197,-24 203,-24"/>
 <text text-anchor="middle" x="392.5" y="-252.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">hyper&#45;server</text>
 </g>
+<g id="clust7" class="cluster">
+<title>cluster_hyperspace/hyper&#45;app/hyper&#45;server/view&#45;engine</title>
+<path fill="#ffffff" stroke="black" stroke-width="2" d="M322,-186C322,-186 574,-186 574,-186 580,-186 586,-192 586,-198 586,-198 586,-226 586,-226 586,-232 580,-238 574,-238 574,-238 322,-238 322,-238 316,-238 310,-232 310,-226 310,-226 310,-198 310,-198 310,-192 316,-186 322,-186"/>
+<text text-anchor="middle" x="448" y="-226.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">view&#45;engine</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_hyperspace/hyper&#45;app/hyper&#45;server/socket&#45;server</title>
+<path fill="#ffffff" stroke="black" stroke-width="2" d="M319,-32C319,-32 557.5,-32 557.5,-32 563.5,-32 569.5,-38 569.5,-44 569.5,-44 569.5,-72 569.5,-72 569.5,-78 563.5,-84 557.5,-84 557.5,-84 319,-84 319,-84 313,-84 307,-78 307,-72 307,-72 307,-44 307,-44 307,-38 313,-32 319,-32"/>
+<text text-anchor="middle" x="438.25" y="-72.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">socket&#45;server</text>
+</g>
 <g id="clust5" class="cluster">
 <title>cluster_hyperspace/hyper&#45;app/hyper&#45;server/static</title>
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M332.5,-92C332.5,-92 566.5,-92 566.5,-92 572.5,-92 578.5,-98 578.5,-104 578.5,-104 578.5,-166 578.5,-166 578.5,-172 572.5,-178 566.5,-178 566.5,-178 332.5,-178 332.5,-178 326.5,-178 320.5,-172 320.5,-166 320.5,-166 320.5,-104 320.5,-104 320.5,-98 326.5,-92 332.5,-92"/>
@@ -33,16 +43,6 @@
 <title>cluster_hyperspace/hyper&#45;app/hyper&#45;server/static/file&#45;watcher</title>
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M460.5,-100C460.5,-100 558.5,-100 558.5,-100 564.5,-100 570.5,-106 570.5,-112 570.5,-112 570.5,-140 570.5,-140 570.5,-146 564.5,-152 558.5,-152 558.5,-152 460.5,-152 460.5,-152 454.5,-152 448.5,-146 448.5,-140 448.5,-140 448.5,-112 448.5,-112 448.5,-106 454.5,-100 460.5,-100"/>
 <text text-anchor="middle" x="509.5" y="-140.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">file&#45;watcher</text>
-</g>
-<g id="clust4" class="cluster">
-<title>cluster_hyperspace/hyper&#45;app/hyper&#45;server/socket&#45;server</title>
-<path fill="#ffffff" stroke="black" stroke-width="2" d="M319,-32C319,-32 557.5,-32 557.5,-32 563.5,-32 569.5,-38 569.5,-44 569.5,-44 569.5,-72 569.5,-72 569.5,-78 563.5,-84 557.5,-84 557.5,-84 319,-84 319,-84 313,-84 307,-78 307,-72 307,-72 307,-44 307,-44 307,-38 313,-32 319,-32"/>
-<text text-anchor="middle" x="438.25" y="-72.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">socket&#45;server</text>
-</g>
-<g id="clust7" class="cluster">
-<title>cluster_hyperspace/hyper&#45;app/hyper&#45;server/view&#45;engine</title>
-<path fill="#ffffff" stroke="black" stroke-width="2" d="M322,-186C322,-186 574,-186 574,-186 580,-186 586,-192 586,-198 586,-198 586,-226 586,-226 586,-232 580,-238 574,-238 574,-238 322,-238 322,-238 316,-238 310,-232 310,-226 310,-226 310,-198 310,-198 310,-192 316,-186 322,-186"/>
-<text text-anchor="middle" x="448" y="-226.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">view&#45;engine</text>
 </g>
 <g id="clust8" class="cluster">
 <title>cluster_hyperspace/hyper&#45;app/page</title>
