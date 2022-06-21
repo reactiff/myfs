@@ -23,8 +23,7 @@ export default class HyperServer {
   constructor(app, options = {}) {
 
     EventManager.implementFor(this, [ 
-      'onStart',
-      'onShutdown',
+      'onReady',
     ], options.events, options.eventHandlers, options );
 
     this.app = app;
@@ -76,7 +75,7 @@ export default class HyperServer {
       // Resolve for localhost
       if (!schema.public) {
         console.log("Schema is not public and is only available on localhost.");
-        this.notify("onStart", { url: `http://localhost:${schema.port}` });
+        this.notify("onReady", { url: `http://localhost:${schema.port}` });
         return;
       }
 
@@ -111,7 +110,7 @@ export default class HyperServer {
           throw new Error(err || stderr);
         }
       });
-      this.notify("onStart", { url: host });
+      this.notify("onReady", { url: host });
     } catch (err) {
       inspectErrorStack(err);
     }

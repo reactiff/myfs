@@ -1,11 +1,11 @@
-import SocketManager from "./SocketManager.mjs";
-import EventManager from "./EventManager.mjs";
+import StateManager from "../StateManager.mjs";
+import EventManager from "../EventManager.mjs";
 
 function sendSocketMessage(model, prefix, data) {
   model.socket.send(prefix + ":" + JSON.stringify(data));
 }
 
-export default class APIControllerBase {
+export default class ControllerBase {
   
   _parent;
 
@@ -21,20 +21,19 @@ export default class APIControllerBase {
   // implemented in derived classes
   socket = undefined;
 
-  constructor({ parent, events, eventHandlers }) {
+  constructor({ parent, events, eventHandlers, state }) {
     this._parent = parent;
     EventManager.implementFor(this, events, eventHandlers);
 
-    // TODO implement state manager
-    // this._state = new StateManager(this, {});
-
+    // TODO how should initial state be propagated to listeners?
+    this._state = new StateManager(this, state);
+    
     // socket 
-    this._socket = new SocketManager(this, { 
-      onOpen: this.onSocketOpen,
-      // onClose: this.onSocketClose,
-      onClientConnect: this.onSocketClientConnect,
-      onClientDisconnect: this.onSocketClientDisconnect,
-    });
+    // this._socket = new SocketManager(this, { 
+    //   onOpen: this.onSocketOpen,
+    //   onClientConnect: this.onSocketClientConnect,
+    //   onClientDisconnect: this.onSocketClientDisconnect,
+    // });
 
   }
 
@@ -59,7 +58,7 @@ export default class APIControllerBase {
   
   /** Overwrites existing state with new one. */
   setState(state) {
-    this._state.setState(state);
+    this._stateManager.setState(state);
     this._sendState(state);
     this.notify("onStateChange", () => this.getState());
   }
@@ -107,7 +106,6 @@ export default class APIControllerBase {
     this.templates[name] = t;
     this._sendAction('addTemplate', t); 
   }
-
   sendHotTemplateUpdate(name, delta) {
     this._sendAction('updateTemplate', { name, delta });
   }
@@ -120,7 +118,6 @@ export default class APIControllerBase {
     this.styles[name] = s;
     this._sendAction('addStyle', s); 
   }
-
   sendHotStyleUpdate(name, delta) {
     this._sendAction('updateStyle', { name, delta });
   }

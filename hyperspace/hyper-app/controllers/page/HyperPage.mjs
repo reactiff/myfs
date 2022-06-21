@@ -1,13 +1,9 @@
-import {assert} from 'utils/assert.mjs';
-import APIControllerBase from '../APIControllerBase.mjs';
-import SocketManager from '../SocketManager.mjs';
+import ControllerBase from '../ControllerBase.mjs';
+import SocketManager from '../Socket.mjs';
 
-// Page 
+// Hyper Page Controller
 
-export default class Page extends APIControllerBase {
-
-  // DEPRECATED
-  // pageResolved = false;
+export default class HyperPage extends ControllerBase {
 
   app;
   route;
@@ -23,11 +19,11 @@ export default class Page extends APIControllerBase {
     super({ 
       parent: options.app,
       events: [ 
-        'onClientConnect',
-        'onClientDisconnect',
         'onReady',
         'onStateChange',
         'onConfigChange',
+        'onClientConnect',
+        'onClientDisconnect',
       ], 
       eventHandlers: { ...options.events, ...options.eventHandlers, ...options }
     });
@@ -39,8 +35,7 @@ export default class Page extends APIControllerBase {
     
     // socket 
     this._socket = new SocketManager(this, { 
-      onOpen: this.onSocketOpen,
-      // onClose: this.onSocketClose,
+      onReady: this.onSocketReady,
       onClientConnect: this.onSocketClientConnect,
       onClientDisconnect: this.onSocketClientDisconnect,
     });
@@ -51,9 +46,13 @@ export default class Page extends APIControllerBase {
   getWsUrl() { return `ws://localhost:${this.app.schema.port + this.page.route}?role=page-controller` }
 
   // SOCKET EVENT HANDLERS
-  onSocketOpen(e) { this.init(); this.notify('onReady', this); }
+  onSocketReady(e) { this.init(); this.notify('onReady', this); }
   
   onSocketClientConnect(e) {
+    this.notify('onClientConnect', this);
+  }
+
+  onSocketClientDisconnect(e) {
     this.notify('onClientConnect', this);
   }
     
