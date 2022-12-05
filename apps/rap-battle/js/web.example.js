@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 var synth = window.speechSynthesis;
 
 var inputForm = document.querySelector('form');
@@ -20,7 +21,7 @@ function populateVoiceList() {
   });
   var selectedIndex = voiceSelect.selectedIndex < 0 ? 0 : voiceSelect.selectedIndex;
   voiceSelect.innerHTML = '';
-  for(i = 0; i < voices.length ; i++) {
+  for(let i = 0; i < voices.length ; i++) {
     var option = document.createElement('option');
     option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
     
@@ -48,13 +49,13 @@ function speak(){
     if (inputTxt.value !== '') {
     var utterThis = new SpeechSynthesisUtterance(inputTxt.value);
     utterThis.onend = function (event) {
-        console.log('SpeechSynthesisUtterance.onend');
+      logInfo('SpeechSynthesisUtterance', 'onend');
     }
     utterThis.onerror = function (event) {
-        console.error('SpeechSynthesisUtterance.onerror');
+      logError('SpeechSynthesisUtterance', 'onerror');
     }
     var selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
-    for(i = 0; i < voices.length ; i++) {
+    for(let i = 0; i < voices.length ; i++) {
       if(voices[i].name === selectedOption) {
         utterThis.voice = voices[i];
         break;

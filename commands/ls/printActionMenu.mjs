@@ -71,17 +71,17 @@
 // }
 
 // function logItemList(name, list, format) {
-//   console.log();
+//   printToConsole();
 //   console.group(boxen(name, { padding: 1 }));
-//   console.log();
+//   printToConsole();
 //   let cnt = 1;
 //   for (let item of list) {
 //     if (format) {
-//       console.log(chalk.white(cnt++), format(item));
+//       printToConsole(chalk.white(cnt++), format(item));
 //       continue;
 //     }
-//     console.log(item);
+//     printToConsole(item);
 //   }
 //   console.groupEnd();
-//   console.log();
+//   printToConsole();
 // }

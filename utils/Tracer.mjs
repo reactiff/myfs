@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { printToConsole } from "./printToConsole.mjs";
 
 const TRACING_ENABLED = false;
 
@@ -10,17 +11,17 @@ export class Tracer {
   enter() {
     if (!TRACING_ENABLED) return this;
     //console.group(chalk.yellow('>>'), chalk.green(this.name));
-    console.log(chalk.yellow(">>"), chalk.green(this.name));
+    printToConsole(chalk.yellow(">>"), chalk.green(this.name));
     return this;
   }
   exit(...data) {
     if (!TRACING_ENABLED) return this;
     if (data && data.length) {
       for (let d of data) {
-        console.log(d);
+        printToConsole(d);
       }
     }
-    console.log(chalk.magenta("<<"), chalk.red(this.name));
+    printToConsole(chalk.magenta("<<"), chalk.red(this.name));
     // console.groupEnd();
     return this;
   }
@@ -28,7 +29,7 @@ export class Tracer {
     if (!TRACING_ENABLED) return this;
     if (data && data.length) {
       for (let d of data) {
-        console.log(d);
+        printToConsole(d);
       }
     }
     return this;

@@ -2,13 +2,14 @@ import chalk from "chalk";
 import path from "path";
 import minimatch from "minimatch";
 import { getProgramDirectory } from "../bin/getProgramDirectory.mjs";
+import { printToConsole } from "./printToConsole.mjs";
 
 function printSchemaValidationErrors(error) {
       
-    console.log(chalk.bgHex("#880000").bold.whiteBright(error.message));
+  printToConsole(chalk.bgHex("#880000").bold.whiteBright(error.message));
   
     error.list.forEach((err, index) => {
-      console.log(
+      printToConsole(
         index + 1 + ".",
         chalk.red(
           [
@@ -23,13 +24,13 @@ function printSchemaValidationErrors(error) {
       );
     });
   
-    console.log();
-    console.log(chalk.underline("Present keys"));
+    printToConsole();
+    printToConsole(chalk.underline("Present keys"));
   
     const schemaKeys = Object.keys(error.schema);
   
     schemaKeys.forEach((key, index) => {
-      console.log(
+      printToConsole(
         index + 1 + ".",
         chalk.cyan(key),
         ":",
@@ -37,10 +38,8 @@ function printSchemaValidationErrors(error) {
       );
     });
   
-    console.log();
-  
-    process.exit();
-  }
+    printToConsole();
+}
   
 
 function inspectErrorStack(error) {
@@ -52,13 +51,12 @@ function inspectErrorStack(error) {
   const rootPath = getProgramDirectory();
 
   if (error.code) {
-    console.log(
-      chalk.bgHex("#880000").bold.whiteBright(" " + error.code + " ")
-    );
+    printToConsole(chalk.bgHex("#880000").bold.whiteBright(" " + error.code + " "));
   }
 
-  const lines = error.stack.split("\n");
+  const report = [];
 
+  const lines = error.stack.split("\n");
   for (let i = lines.length - 1; i > 0; i--) {
     const line = lines[i].trim().replace(/<anonymous>/gim, "");
 
@@ -76,8 +74,15 @@ function inspectErrorStack(error) {
         const fi2 = [...line.matchAll(/\(([\w\W]+?)\)$/gim)];
         if (fi2 && fi2.length > 0) {
           const captured = fi2[0][1];
-          const [file, row, col] = captured.split(":");
-          fileInfo = { file, row, col };
+
+          // because splitting the line by : splits the filename in two due to drive name having :
+          // so the Row and Col tokens can shift from positions 1 and 2 into positions 2 and 3
+          // however when reversed, Col is always at position 0 and Row at position 1 
+          // The remaining file tokens should be reversed again and joined by :
+
+          const rTokens = captured.split(":").reverse();
+          const [col, row, ...fileTokens] = rTokens;
+          fileInfo = { col, row, file: fileTokens.reverse().join(':') };
         }
       }
 
@@ -105,21 +110,27 @@ function inspectErrorStack(error) {
     const offset = "".repeat(lines.length - 1 - i) + (current ? "→" : "");
 
     if (fileInfo.isProjectFile) {
-      console.log(
+      report.push(
         offset,
         current ? chalk.bgHex("#880000").whiteBright(" " + line.trim() + " ")
           : chalk.red(line.trim())
       );
     } else {
-      console.log(offset, chalk.gray(line.trim()));
+      report.push(offset, chalk.gray(line.trim()));
     }
   }
 
-  console.log("  " + chalk.bgHex("#330000").white(error.message));
-  console.log();
+  report.push("  " + chalk.bgHex("#330000").white(error.message));
+  report.push("");
+
+  printToConsole(report.join('\n'));
 
   // terminate the process
-  process.exit();
+  // UNCOMMENTED BECAUSE IT BREAKS JEST TESTS, and it is an antipattern.
+  // process.exit();
+
+  throw new Error(error.message);
+
 }
 
 export default inspectErrorStack;

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 var synth = (()=>{
   const s = window.speechSynthesis;
   !s && alert('speechSynthesis unavailable');
@@ -64,8 +65,8 @@ function speak(bot, options) {
   const text = bot.ui.text.value;
   if (!text) return;
   var utterance = new SpeechSynthesisUtterance(text);
-  utterance.onend = (event) => console.log("spoke");
-  utterance.onerror = (event) => console.error(event);
+  utterance.onend = (event) => logInfo('utterance', "spoke");
+  utterance.onerror = (event) => logError('utterance', event.message || event);
   utterance.voice = voices[bot.voiceIndex];
   utterance.pitch = bot.pitch || 1;
   utterance.rate = bot.rate || 1;

@@ -1,56 +1,157 @@
+import chalk from "chalk";
+import logTrack from "utils/logTrack.mjs";
 import toDictionary from "utils/toDictionary.mjs";
+
+let EVENT_COUNT = 0;
 
 export default class EventManager {
 
+  target;
   topics = {};
+  counts = {};
 
-  constructor(topicNames, handlers) {
+  allowDynamicTopics;
+
+  constructor(target, topicNames, handlers) {
+    this.target = target;
     this.topics = toDictionary(
       topicNames, 
-      k => k, 
-      []
+      (k) => k, 
+      () => [].slice()
     );
-    
+    this.counts = toDictionary(
+      topicNames, 
+      (k) => k, 
+      () => 0
+    );
+        
+    this.allowDynamicTopics = Reflect.has(this.topics, '*');
+
     // bind event handlers supplied
     Object.keys(handlers)
-      .filter(k => Reflect.has(this.topics, k))
+      // .filter(k => Reflect.has(this.topics, k))
       .forEach(k => this.subscribe(k, handlers[k]))
   }
 
+  getSubs(topic) {
+    let arr;
+
+    const isLocal = this.allowDynamicTopics || Reflect.has(this.topics, topic);
+
+    if (isLocal) {
+      arr = this.topics[topic];
+    } 
+    else {
+      arr = (this.target.topics || {})[topic];
+    }
+   
+    return arr;
+  }
+
+  createDynamicTopic(topic) {
+    this.topics[topic] = [].slice();
+    this.counts[topic] = 0;
+    return this.topics[topic];
+  }
+
+  topicExists(topic) {
+    return Reflect.has(this.topics, topic) 
+      || Reflect.has((this.target.topics || {}), topic);
+  }
+
+  isValidTopic(topic) {
+    const isLocalTopic = Reflect.has(this.topics, topic) || Reflect.has(this.topics, '*');
+    const isTargetTopic = this.target 
+      && this.target.topics 
+      && (
+        Reflect.has(this.target.topics, topic) 
+        || 
+        Reflect.has(this.target.topics, '*')
+      );
+    return isLocalTopic || isTargetTopic;
+  }
+
   findSubscriptionIndex(topic, callback) {
-    return this.topics[topic].findIndex(cb => cb === callback); 
+    return this.getSubs(topic).findIndex(cb => cb === callback); 
   }
 
   subscribe(topic, callback) {
-    if (!Reflect.has(this.topics, topic)) throw new Error(`Invalid topic: ${topic}`);
+    if (!this.isValidTopic(topic)) {
+      debugger // topic not found
+    }
+
+    if (!this.topicExists(topic) && this.allowDynamicTopics) {
+      // create dynamic topic
+      this.createDynamicTopic(topic);
+    }
     const subIndex = this.findSubscriptionIndex(topic, callback);
     if (subIndex >= 0) return; // exit silently
     this.topics[topic].push(callback);
   }
 
   unsubscribe(topic, callback) {
-    if (!Reflect.has(this.topics, topic)) throw new Error(`Invalid topic: ${topic}`);
+    if (!this.isValidTopic(topic)) {
+      debugger // topic not found
+    }
     const subIndex = this.findSubscriptionIndex(topic, callback);
     if (subIndex < 0) return; // exit silently
     this.topics[topic].splice(subIndex, 1);
   }
 
-  notify(topic, ...args) {
-    if (!Reflect.has(this.topics, topic)) throw new Error(`Invalid topic: ${topic}`)
-    this.topics[topic].forEach(callback => callback(...args));
+  getTargetName() {
+    let targetName;
+    if (this.target.getName) {
+      targetName = this.target.getName();
+    }
+    else {
+      if (!this.target.constructor) throw new Error('Target is not even a class...');
+      targetName = this.target.constructor.name; 
+    }
+    return targetName;
   }
 
-  static implementFor(obj, topicNames, ...handlers) {
-    const eh = handlers || [];
-    const h = Object.assign({}, ...eh);
-    const em = new EventManager(topicNames, h);
+  notify(topic, data) {
+    const targetName = this.getTargetName();
+    const subs = this.getSubs(topic);
+    
+    if (!subs) {
+      logTrack('EventManager', `topic ${topic} not found`);
+    }
+
+    const eventId = ++EVENT_COUNT;
+
+
+    const validCallbacks = subs.filter(cb => typeof cb === 'function');
+
+    if (validCallbacks.length > 0) {
+      logTrack(targetName, chalk.gray.italic(targetName + '::' + topic + ` {${eventId}}` + ' (call back ' + validCallbacks.length + ' subscribers)')); 
+      validCallbacks.forEach(callback => {
+        if (typeof callback === 'function') {
+          callback({ 
+            topic,
+            target: this.target,
+            data,
+            id: eventId,
+          })
+        }
+      });
+    }
+    else {
+      // log it subtly in gray italic
+      logTrack(targetName, chalk.gray.italic(targetName + '::' + topic)); 
+    }
+
+    this.counts[topic]++;
+  }
+
+  static implementFor(obj, eventNames, events) {
+    const h = events || {};
+    const em = new EventManager(obj, eventNames, h);
+    em.target = obj;
     obj.eventManager = em;
-
-    /** Private.  DO NOT USE. */
-    function notify(topic, ...args) { em.notify(topic, ...args) }
-    obj.notify = notify;
-
-    obj.subscribe = (topic, callback) => em.subscribe(topic, this.callback);
-    obj.unsubscribe = (topic, callback) => em.unsubscribe(topic, this.callback);
+    obj.notify = (topic, ...args) => em.notify(topic, ...args);
+    obj.subscribe = (topic, callback) => em.subscribe(topic, callback);
+    obj.unsubscribe = (topic, callback) => em.unsubscribe(topic, callback);
+    obj.getNotifyCount = (topic) => em.counts[topic];
   }
 }

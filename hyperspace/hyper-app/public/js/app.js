@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 function showMessages() {
 
 }
@@ -6,12 +7,12 @@ function app(h) {
 
     debugger
 
-    h.state.watch('', (state) => {
-        console.log('app.js: state -->', state)
+    h.state.addHook('', (state) => {
+        debugger
+        logInfo('app.js', 'state:', JSON.stringify(state, null, ' '));
     });
     
-
-    console.log(h.state)
-
+    logInfo('app.js', 'state:', JSON.stringify(h.state, null, ' '));
 
 }
+

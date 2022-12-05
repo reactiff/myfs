@@ -3,11 +3,12 @@ import { getSearchResultSorter } from "./sort.mjs";
 // import { printActionMenu } from "./printActionMenu.mjs";
 import boxen from "boxen";
 import moment from 'moment';
+import { printToConsole } from "utils/printToConsole.mjs";
 
 export function terminalServeSearchResults(results, opts) {
 
-  console.log("\n");
-  console.log(
+  printToConsole("\n");
+  printToConsole(
     boxen("Search results for: " + chalk.magenta(opts.find), { padding: 1 })
   );
 
@@ -25,7 +26,7 @@ export function terminalServeSearchResults(results, opts) {
       const fileName = item.file.name;
       const filePath = item.file.fullPath;
  
-      console.log('In ' + chalk.bold.white(filePath + ':'));
+      printToConsole('In ' + chalk.bold.white(filePath + ':'));
       itemNumber++;
 
       for (let lr of item.lineResults) {
@@ -52,12 +53,12 @@ export function terminalServeSearchResults(results, opts) {
         }
 
         console.group('')
-        console.log(chalk.hex('#9cc8f7')(filePath + ':' + lineNumber));
+        printToConsole(chalk.hex('#9cc8f7')(filePath + ':' + lineNumber));
         console.group('')
-        console.log(source);
+        printToConsole(source);
         console.groupEnd()
         console.groupEnd()
-        console.log('');
+        printToConsole('');
       }
     }
   }

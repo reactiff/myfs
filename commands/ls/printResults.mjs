@@ -4,6 +4,7 @@ import moment from "moment";
 import path from "path";
 
 import { getProgramDirectory } from "../../bin/getProgramDirectory.mjs"
+import { printToConsole } from "utils/printToConsole.mjs";
 
 chalk.level = 3;
 
@@ -12,9 +13,9 @@ const cwd = path.resolve(process.cwd());
 
 export function printResults(fsItems, options) {
 
-  console.log();
-  console.log(`${fsItems.items.length} results`);
-  console.log();
+  printToConsole();
+  printToConsole(`${fsItems.items.length} results`);
+  printToConsole();
 
   const colDefs = getColDefs(fsItems, options);
   
@@ -48,7 +49,7 @@ export function printResults(fsItems, options) {
       const posix = f.path.replace(/\\/g, "/");
       const relativePath = '.' + posix.slice(cwd.length);
 
-      console.log(
+      printToConsole(
 
         // #
         chalk.gray((cnt++).toString().padStart(colDefs[0].length)),
@@ -66,11 +67,11 @@ export function printResults(fsItems, options) {
         chalk.gray(relativePath + '/' + f.name)
       );
     } else {
-      console.log(f.fullPath);
+      printToConsole(f.fullPath);
     }
   });
 
-  console.log("");
+  printToConsole("");
 }
 
 
@@ -156,7 +157,7 @@ function getColDefs(fsItems, options) {
 function printColHeaders(colDefs, options) {
   const formatHeader = (cd) => cd.getCH ? cd.getCH() : cd.name.padEnd(cd.length, " ");
   const headers = [...colDefs.map((cd) => formatHeader(cd))];
-  console.log(...headers);
+  printToConsole(...headers);
   const dashes = [...colDefs.map((cd) => chalk.gray("-".repeat(cd.length)))];
-  console.log(...dashes);
+  printToConsole(...dashes);
 }

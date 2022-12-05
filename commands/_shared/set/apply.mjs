@@ -1,5 +1,6 @@
 import store from "utils/store/index.mjs";
 import _ from 'lodash';
+import { printToConsole } from "utils/printToConsole.mjs";
 
 export async function execute(context) {
   try {
@@ -17,7 +18,7 @@ export async function execute(context) {
     // Do your thing!
     store.set(objectId, object);
     
-    console.log(object);
+    printToConsole(object);
         
   } catch (ex) {
     throw new Error(ex.message);

@@ -1,5 +1,6 @@
 import store from "utils/store/index.mjs";
 import chalk from "chalk";
+import { printToConsole } from "utils/printToConsole.mjs";
 
 // COMMAND MODULE PROPS
 export const desc = `Toggle verbosity`;
@@ -18,9 +19,9 @@ export async function execute(context) {
     store.set('verbose', value);
 
     if (value) {
-      console.log(chalk.cyan("verbose: true"));
+      printToConsole(chalk.cyan("verbose: true"));
     } else {
-      console.log(chalk.gray("verbose: false"));
+      printToConsole(chalk.gray("verbose: false"));
     }
 
     

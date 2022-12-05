@@ -7,11 +7,8 @@ function app(h) {
     debugger
 
     h.state.watch('', (state) => {
-        console.log('app.js: state -->', state)
+        debugger
     });
     
-
-    console.log(h.state)
-
 
 }

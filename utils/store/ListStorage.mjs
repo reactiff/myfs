@@ -3,6 +3,7 @@ import store from "./index.mjs";
 import chalk from "chalk";
 import { StorageBase } from "./StorageBase.mjs";
 import { ShowHelp } from "../help.mjs";
+import { printToConsole } from "../printToConsole.mjs";
 
 // LIST COMMANDS
 
@@ -81,20 +82,20 @@ export class ListStorage extends StorageBase {
 
   add(value) {
     store.add(this.uniqueKey, value);
-    console.log(chalk.yellow(_.capitalize(this.itemName) + " added:"), value);
+    printToConsole(chalk.yellow(_.capitalize(this.itemName) + " added:"), value);
     return;
   }
 
   delete(value) {
     debugger;
     store.remove(this.uniqueKey, value);
-    console.log(chalk.yellow(_.capitalize(this.itemName) + " deleted:"), value);
+    printToConsole(chalk.yellow(_.capitalize(this.itemName) + " deleted:"), value);
     return;
   }
 
   clear() {
     store.set(this.uniqueKey, []);
-    console.log(
+    printToConsole(
       chalk.yellow("All " + _.capitalize(this.itemName) + "s cleared")
     );
     return;

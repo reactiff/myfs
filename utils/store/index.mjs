@@ -3,6 +3,7 @@ import chalk from "chalk";
 import columnify from "columnify";
 import boxen from "boxen";
 import toDictionary from "../toDictionary.mjs";
+import { printToConsole } from "../printToConsole.mjs";
 
 const store = new Configstore("fs", {});
 
@@ -37,8 +38,8 @@ function show(k, formatItem, items) {
     ? formatArray(state, formatItem)
     : formatScalar(state, formatItem);
 
-  console.log();
-  console.log(content);
+  printToConsole();
+  printToConsole(content);
 
   //   boxen(content, {
   //     title: k,
@@ -49,7 +50,7 @@ function show(k, formatItem, items) {
       
   //   })
   // );
-  console.log();
+  printToConsole();
 }
 
 function add(listName, item, unique = false) {
@@ -57,8 +58,8 @@ function add(listName, item, unique = false) {
 
   const items = store.get(listName) || [];
   if (unique && items.includes(encoded)) {
-    console.log(chalk.bgYellow.black("Already exists:"), item);
-    process.exit();
+    printToConsole(chalk.bgYellow.black("Already exists:"), item);
+    return;
   }
 
   items.push(encoded);
@@ -73,7 +74,7 @@ function remove(listName, item) {
   const items = store.get(listName) || [];
   if (!items.includes(encoded)) {
     console.error(chalk.bgYellow.black("Not found: "), item);
-    process.exit();
+    return;
   }
 
   const index = items.findIndex((x) => x === encoded);
@@ -85,8 +86,8 @@ function remove(listName, item) {
 
 function rekey(oldKey, newKey) {
   if (!store.has(oldKey)) {
-    console.log(chalk.bgYellow.black("Key does not exists:"), oldKey);
-    process.exit();
+    printToConsole(chalk.bgYellow.black("Key does not exists:"), oldKey);
+    return;
   }
   const value = store.get(oldKey);
   store.set(newKey, value);

@@ -2,108 +2,81 @@ import StateManager from "../StateManager.mjs";
 import EventManager from "../EventManager.mjs";
 
 function sendSocketMessage(model, prefix, data) {
-  model.socket.send(prefix + ":" + JSON.stringify(data));
+  model._socket.send(prefix + ":" + JSON.stringify(data));
 }
 
 export default class ControllerBase {
-  
-  _parent;
-
+ 
+  // #region MEMBER DECLARATIONS
+  _parent;  // this references the App in derived Page;  for App it is not set
   _config;
-  _state;
-
+  _state; // StateManager
   _hooks = [];
   _actions = {};
   _scripts = {};
   _templates = {};
   _styles = {};
+  _socket = undefined; // implemented in derived classes
+  //#endregion
 
-  // implemented in derived classes
-  socket = undefined;
-
-  constructor({ parent, events, eventHandlers, state }) {
+  constructor({ parent, eventNames, events, state }) {
     this._parent = parent;
-    EventManager.implementFor(this, events, eventHandlers);
-
-    // TODO how should initial state be propagated to listeners?
+    EventManager.implementFor(this, eventNames, events);
     this._state = new StateManager(this, state);
-    
-    // socket 
-    // this._socket = new SocketManager(this, { 
-    //   onOpen: this.onSocketOpen,
-    //   onClientConnect: this.onSocketClientConnect,
-    //   onClientDisconnect: this.onSocketClientDisconnect,
-    // });
-
   }
+  
+  init() {  throw new Error('init() not implemented in derived class') }
 
-  // VIRTUAL METHODS
+  //#region VIRTUAL METHODS
   getName() { throw new Error("getName() not implemented by the controller") }
   getWsUrl() { throw new Error("getWsUrl() not implemented by " + this.getName()) }
-
-  _sendAction(action, payload) {
-    sendSocketMessage(this, "action", { action, ...payload });
-  }
-
-  _sendState(payload) {
-    sendSocketMessage(this, "state", payload);
-  }
-
-  _sendConfig(payload) {
-    sendSocketMessage(this, "config", payload);
-  }
+  _sendAction(action, payload) { sendSocketMessage(this, "action", { action, payload }); }
+  _sendState(path, payload) { sendSocketMessage(this, "state", { path, payload }); }
+  //#endregion
 
   /////////
   // STATE
   
   /** Overwrites existing state with new one. */
   setState(state) {
-    this._stateManager.setState(state);
-    this._sendState(state);
-    this.notify("onStateChange", () => this.getState());
+    this._state.setState(state);
+    this._sendState('', state);
   }
 
   /** Merges the partial state into existing state. */
-  updateState(partial) {
-    this.setState(Object.assign({}, this.state, partial));
+  updateState(path, partialState) {
+    this._state.updateState(path, partialState);
+    this._sendState(path, partialState);
   }
 
   /** Gets app.state overriden with page state */
   getState() {
-    return this.parent ? Object.assign({}, this.parent.getState(), this.state) : this.state;
+    const thisState = this._state.getState();
+    if (this._parent) {
+      const parentState =  this._parent.getState();
+      return Object.assign({}, parentState, thisState)
+    } else {
+      return thisState;
+    } 
   }
-
-  /////////
-  // CONFIG
-
-  setConfig(config) {
-    this.config = config;
-    this._sendConfig(this, config);
-    this.notify("onConfigChange", this);
-  }
-
-  /** Gets app.config overriden with page.config */
-  getConfig() {
-    return Object.assign({}, this.app.getConfig(), this.config);
-  }
-
+  
   ////////
   // HOOKS
   addHook(pathInState, handler) {
-    this.hooks.push({ path: pathInState, handler });
+    this._hooks.push({ path: pathInState, handler });
   }
 
   //////////
   // ACTIONS
   addAction(name, fnOrPayload) {
-    this.actions[name] = fnOrPayload;
+    this._actions[name] = fnOrPayload;
   }
 
   ////////////
   // TEMPLATES
   addTemplate(name, template) { 
     const t = { name, template };
-    this.templates[name] = t;
+    this._templates[name] = t;
     this._sendAction('addTemplate', t); 
   }
   sendHotTemplateUpdate(name, delta) {
@@ -115,11 +88,23 @@ export default class ControllerBase {
   
   addStyle(name, style) { 
     const s = { name, style };
-    this.styles[name] = s;
+    this._styles[name] = s;
     this._sendAction('addStyle', s); 
   }
   sendHotStyleUpdate(name, delta) {
     this._sendAction('updateStyle', { name, delta });
+  }
+
+  /////////
+  // SCRIPTS
+  
+  addScript(name, script) { 
+    const s = { name, script };
+    this._scripts[name] = s;
+    this._sendAction('addScript', s); 
+  }
+  sendHotScriptUpdate(name, delta) {
+    this._sendAction('updateScript', { name, delta });
   }
 
 }

@@ -3,6 +3,7 @@ import { parseCommandContext } from "./commandContext.mjs";
 import remap from "./remap.mjs";
 import { printHelp } from "./help.mjs";
 import { Tracer } from "./Tracer.mjs";
+import { printToConsole } from "./printToConsole.mjs";
 
 export async function nextCommand(currentContext, depth, initArgs) {
   const d = currentContext ? currentContext.depth : depth;
@@ -53,7 +54,7 @@ export async function nextCommand(currentContext, depth, initArgs) {
       }))
       .argv;
   } catch (ex) {
-    console.log(ex);
+    printToConsole(ex);
     debugger;
   }
 

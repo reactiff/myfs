@@ -47,7 +47,7 @@
 //             handler: (argv) => {
 //               return new Promise((resolve, reject) => {
 //                 m.execute(argv._.slice(1), argv, resolve, fsitem)
-//                   .catch((ex) => console.log(chalk.redBright(ex.message)));
+//                   .catch((ex) => printToConsole(chalk.redBright(ex.message)));
 //               });
 //             },
 //           };

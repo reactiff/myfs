@@ -6,6 +6,7 @@ import _ from "lodash";
 import { getLocalPackage } from 'utils/getLocalPackage.mjs';
 import boxen from "boxen";
 import { Tracer } from "./Tracer.mjs";
+import { printToConsole } from "./printToConsole.mjs";
 
 export const ShowHelp = Symbol.for('ShowHelp');
 
@@ -22,16 +23,16 @@ export async function printHelp(module, fsItem, context) {
 }
 
 async function printHeader(module, fsItem, context) {
-    console.log();
+    printToConsole();
     console.group();
 
     if (context.error) {
-        console.log(chalk.red(context.error.message), '\n');
+        printToConsole(chalk.red(context.error.message), '\n');
     }
 
     if (module && module.desc && context.flags.help) {
-        console.log(boxen(module.desc));
-        console.log();
+        printToConsole(boxen(module.desc));
+        printToConsole();
     }
 
     const tokens = context.commandTokens.map(t => {
@@ -43,7 +44,7 @@ async function printHeader(module, fsItem, context) {
         return t;
     });
 
-    console.log(
+    printToConsole(
         chalk.white(
             '> fs ' + 
             tokens.join(' ')
@@ -61,7 +62,7 @@ async function printAvailableOptions(module, fsItem, context) {
     if (!module) return;
     if (module.options) {
 
-        // console.log(chalk.white('Flags'), '\n');
+        // printToConsole(chalk.white('Flags'), '\n');
 
         console.group();
 
@@ -77,10 +78,10 @@ async function printAvailableOptions(module, fsItem, context) {
             })
         );
 
-        console.log(columnify(data, { columns: ['alias', 'type', 'default', 'description'], showHeaders: false }));
+        printToConsole(columnify(data, { columns: ['alias', 'type', 'default', 'description'], showHeaders: false }));
 
         console.groupEnd();
-        console.log();
+        printToConsole();
     }
     
 }
@@ -109,7 +110,7 @@ async function printAvailableCommands(module, context, cmdCharOffset) {
     );
 
     // const prefix = '\u0020'.repeat(cmdCharOffset);
-    console.log('\u0020'.repeat(cmdCharOffset + 1), chalk.gray('\u2193'));
+    printToConsole('\u0020'.repeat(cmdCharOffset + 1), chalk.gray('\u2193'));
 
     // calculate maximum length for each printed column
     const colWidth = { 
@@ -136,8 +137,8 @@ async function printAvailableCommands(module, context, cmdCharOffset) {
                 }).join(' ')
             }));
 
-        console.log(columnify(data, { showHeaders: false }));
-        console.log();
+        printToConsole(columnify(data, { showHeaders: false }));
+        printToConsole();
     }
 
     console.groupEnd();

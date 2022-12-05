@@ -3,6 +3,7 @@ import _ from 'lodash';
 // import { EXISTS, NEXISTS } from "utils/special-chars/set-theory.mjs";
 import { ShowHelp } from "utils/help.mjs";
 import chalk from "chalk";
+import { printToConsole } from "utils/printToConsole.mjs";
 
 // COMMAND MODULE PROPS
 
@@ -19,7 +20,7 @@ export async function execute(context) {
     
     store.erase(argv.key);
     
-    console.log( chalk.bgYellow.black('Permanently deleted storage entry for key: ' + argv.key));
+    printToConsole( chalk.bgYellow.black('Permanently deleted storage entry for key: ' + argv.key));
     
   } catch (ex) {
     throw new Error(ex.message);

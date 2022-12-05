@@ -5,6 +5,7 @@ import chalk from 'chalk'
 import fs from 'fs';
 import { parseOptions } from "utils/parseOptions.mjs";
 import { PathListStorage } from "utils/store/list.mjs";
+import { printToConsole } from "utils/printToConsole.mjs";
 
 export const options = {
   'A': {
@@ -63,13 +64,13 @@ export async function execute(context) {
     if (items.length) {
       console.group(chalk.yellow('PATHS:'))
       for (let p of items) {
-        console.log(p);
+        printToConsole(p);
       }
     } else {
       console.group(chalk.yellow('(NO PATHS STORED)'))  
     }
     
-    console.log();
+    printToConsole();
 
   } catch (ex) {
     throw new Error(ex.message);

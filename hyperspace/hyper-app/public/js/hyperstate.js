@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 function fnOrValue(v, ...args) { return typeof v === 'function' ? v(...args) : v; }
 
 var createHyperState = function (wsProxy) { 
@@ -8,7 +9,15 @@ var createHyperState = function (wsProxy) {
     function getAffectedHooks(partial) {
         const affected = [];
         _hooks.forEach(h => {
-            const sample = _.get(partial, h.path);
+            let sample;
+            if (h.path===undefined || h.path===null || h.path==='') {
+                debugger
+                sample = _state;
+                h.snapshot = sample;
+                affected.push(h);
+                return;
+            }
+            sample = _.get(partial, h.path);
             if (sample !== undefined) {
                 const areEqual = sample == h.snapshot;
                 if (!areEqual) {

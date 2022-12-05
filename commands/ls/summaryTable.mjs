@@ -5,6 +5,7 @@ import columnify from "columnify";
 import memoize from "memoizee";
 import fnOrValue from "utils/fnOrValue.mjs";
 import boxen from "boxen";
+import { printToConsole } from "utils/printToConsole.mjs";
 
 export function summaryTable(results, scope) {
   const { items } = results;
@@ -44,17 +45,17 @@ export function summaryTable(results, scope) {
     }
   ];
 
-  console.log();
-  console.log(columnify(summary, { showHeaders: false, preserveNewLines: true, columnSplitter: ' | ' }));
-  console.log();
+  printToConsole();
+  printToConsole(columnify(summary, { showHeaders: false, preserveNewLines: true, columnSplitter: ' | ' }));
+  printToConsole();
 
-  // console.log(boxen(columnify(summary.byType, { showHeaders: false }), {
+  // printToConsole(boxen(columnify(summary.byType, { showHeaders: false }), {
   //   title: "File counts by Type",
   //   borderStyle: "round",
   //   padding: 1,
   // }));
 
-  // console.log(boxen(columnify(summary.byFolder, { showHeaders: false }), {
+  // printToConsole(boxen(columnify(summary.byFolder, { showHeaders: false }), {
   //   title: "File counts by Folder",
   //   borderStyle: "round",
   //   padding: 1,

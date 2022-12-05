@@ -57,8 +57,6 @@ export async function execute(context) {
 
     if (argv.H||argv.hist) {
       store.hist(name, );
-
-      process.exit();
     }
 
     if (argv.U||argv.undo) {

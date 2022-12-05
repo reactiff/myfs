@@ -1,17 +1,9 @@
-import store from './store/index.mjs';
 import path from 'path';
 import { enumeratePath } from './myfs/enumeratePath.mjs';
-import { 
-    resolvePath,
-    readFile,
-    // open,
+import {
+    readFile, resolvePath
 } from './myfs/getFilesByGlob.mjs';
 import SearchSession from './search/SearchSession.mjs';
-import chalk from 'chalk';
-
-// TODO: Custom scoring and sorting 
-// - add attribute(name, x => y(x)) method like this:  searchResults.attribute('efficiency', res => measureEfficiency(res) )
-// - then create a sorterByValueAtPath getSorterByValueAtPath('efficiency')
 
 class myfs {
 

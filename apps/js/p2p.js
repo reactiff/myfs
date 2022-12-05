@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+const services = {};
 const clientKeys = [];
 const providerKeys = {
   'dom': [],
@@ -58,35 +60,37 @@ class RelayService {
   }
 }
 
-const services = {};
+function init() {
+  
+  var protocol = window.location.protocol === "http:" ? "ws://" : "wss://";
+  var address = protocol + window.location.host + window.location.pathname;
+  var ws = new WebSocket(address, ['dom', 'css']);
+
+  services.p2p = new RelayService(ws);
+
+  ws.onopen = (e) => { 
+    debugger
+    logInfo('ws', 'onopen');
+    services.p2p.registerClient({
+      id: e.target.headers["sec-websocket-key"],
+      target: e.target,
+    });
+   };
+
+  ws.onclose = (e) => { 
+    logInfo('ws', 'onclose');
+    services.p2p.unregisterClient(e.target);
+  };
+
+  ws.onmessage = (e) => {
+    debugger
+    logInfo('ws', 'onmessage:', JSON.stringify(e, null, ' '));
+    services.p2p.providerBroadcast(e);
+  }
+
+  
+}
 
 if ("WebSocket" in window) {
-  function init() {
-    var protocol = window.location.protocol === "http:" ? "ws://" : "wss://";
-    var address = protocol + window.location.host + window.location.pathname;
-    var ws = new WebSocket(address, ['dom', 'css']);
-    services.p2p = new RelayService(ws);
-
-    ws.onopen = (e) => { 
-
-      console.log('Page received a WS connection:', e);
-
-      debugger
-      p2p.registerClient({
-        id: e.target.headers["sec-websocket-key"],
-        target: e.target,
-      });
-     };
-
-    ws.onclose = (e) => { 
-      p2p.unregisterClient(e.target);
-    };
-
-    ws.onmessage = (e) => {
-      console.log('rx:', e);
-      debugger
-      p2p.providerBroadcast(e);
-    }
-
-  }
+  init();
 }

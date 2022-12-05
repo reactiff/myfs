@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { printToConsole } from "./printToConsole.mjs";
 
 const rethrow = (ex) => { 
     
@@ -7,7 +8,7 @@ const rethrow = (ex) => {
     const stack = ex.stack && ex.stack.split('\n');
     stack && stack.slice(1)
         .forEach(line => {
-            console.log(chalk.gray(line));
+            printToConsole(chalk.gray(line));
         })
       
     throw new Error(ex.message) 

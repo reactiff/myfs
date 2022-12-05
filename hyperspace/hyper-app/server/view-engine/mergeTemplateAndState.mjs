@@ -1,4 +1,5 @@
 import { JSDOM } from 'jsdom';
+import _ from 'lodash';
 
 const { document } = (new JSDOM(`...`)).window;
 
@@ -9,7 +10,15 @@ function createNewElementId(prefix) {
     return id;
 }
 
+/** 
+ * Find and replace all {path.in.state} tags with their corresponding values.
+ * 
+*/
 export default function mergeTemplateAndState(view, state) {
+
+    debugger
+
+    // TODO: THIS SEEMS BROKEN.
 
     let mergedView = view;
 
@@ -26,7 +35,7 @@ export default function mergeTemplateAndState(view, state) {
             const m = matches[0];
 
             const path = m[1];
-            // const value = _.get(state, path);
+            const value = _.get(state, path);
             
             const startPos = getStartOfOpeningTag(mergedView, m.index);
             const endPos = getEndOfClosingTag(mergedView, m.index);

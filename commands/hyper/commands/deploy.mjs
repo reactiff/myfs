@@ -11,6 +11,7 @@ import { assert } from "utils/assert.mjs";
 import { config } from "../../deploy/config.mjs";
 import { execSync } from "child_process";
 import { promptInput } from "utils/promptInput.mjs";
+import { printToConsole } from "utils/printToConsole.mjs";
 
 // COMMAND MODULE PROPS
 export const desc = `Manual help description`;
@@ -122,13 +123,13 @@ function getStartScript(pkg, argv) {
 
 function printResult(result) {
   if (result.stdout) {
-    console.log(">", result.stdout);
+    printToConsole(">", result.stdout);
   }
   if (result.stderr) {
-    console.log(">", result.stderr);
+    printToConsole(">", result.stderr);
   }
   if (!result.stdout) {
-    console.log(">", result);
+    printToConsole(">", result);
   }
 }
 
@@ -221,7 +222,7 @@ function getSSHCommandList(d) {
           .replace(/\\/g, "/"),
         isFile: true,
         validate: (itemPath) => {
-          console.log(itemPath);
+          printToConsole(itemPath);
           return true;
         },
       })
@@ -239,7 +240,7 @@ export async function execute(context) {
     
   const m = await import('node-ssh')
     .catch(ex => {
-      console.log(chalk.bgRed.white('NodeSSH is not available in this environment or build'));
+      printToConsole(chalk.bgRed.white('NodeSSH is not available in this environment or build'));
     });
 
   debugger
@@ -281,7 +282,6 @@ export async function safeExecute(args, argv) {
     const ignorePatterns = loadIgnorePatterns();
 
     const pathIsNotIgnored = (testPath) => {
-      console.log(testPath);
       return !ignorePatterns.some((ignore) =>
         minimatch(testPath, ignore, { dot: true })
       );
@@ -318,19 +318,19 @@ export async function safeExecute(args, argv) {
     }
 
     console.group("\n");
-    console.log(deployment.appName, "v" + pkg.version);
-    console.log("------------------------------");
-    console.log("HERE IS THE DEPLOYMENT SCRIPT:");
-    console.log("------------------------------");
+    printToConsole(deployment.appName, "v" + pkg.version);
+    printToConsole("------------------------------");
+    printToConsole("HERE IS THE DEPLOYMENT SCRIPT:");
+    printToConsole("------------------------------");
     const commands = getSSHCommandList(deployment);
     commands.forEach((cmd) => {
       if (cmd.name === "log") {
-        console.log(...cmd.args);
+        printToConsole(...cmd.args);
       } else {
-        console.log("ssh", cmd.name, ...cmd.args);
+        printToConsole("ssh", cmd.name, ...cmd.args);
       }
     });
-    console.log("\n");
+    printToConsole("\n");
     console.groupEnd();
 
     const input = await promptInput("Proceed with deployment? [y/n]")
@@ -353,11 +353,11 @@ function run(commands) {
         const ssh = new NodeSSH();
         for (let cmd of commands) {
           if (cmd.name === "log") {
-            console.log(...cmd.args);
+            printToConsole(...cmd.args);
           } else {
             const command = ssh[cmd.name];
             const args = cmd.args;
-            console.log(cmd.name, ...cmd.args);
+            printToConsole(cmd.name, ...cmd.args);
             const r = await command.call(ssh, ...args);
             if (cmd.then) {
               cmd.then(r);

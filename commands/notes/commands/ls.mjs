@@ -1,6 +1,7 @@
 import Evernote from "evernote";
 import _ from "lodash";
 import cliProgress from "cli-progress";
+import { printToConsole } from "utils/printToConsole.mjs";
 
 function createProgress(data, options) {
   debugger;
@@ -39,11 +40,9 @@ function createProgress(data, options) {
   return {
     abort: () => {
       multibar.stop();
-      process.exit();
     },
     stop: () => {
       multibar.stop();
-      process.exit();
     },
     bars,
   };
@@ -54,7 +53,6 @@ export async function execute(context) {
 
     const { args, argv } = context;
     
-
     debugger;
 
     var developerToken =
@@ -81,7 +79,7 @@ export async function execute(context) {
         progress.update(1);
 
         for (var i in notebooks) {
-          console.log("Notebook: " + notebooks[i].name);
+          printToConsole("Notebook: " + notebooks[i].name);
         }
 
         progress.stop();

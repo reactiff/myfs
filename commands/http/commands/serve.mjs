@@ -4,6 +4,7 @@
 // import store from "utils/store.mjs";
 // import _ from "lodash";
 import chalk from "chalk";
+import { printToConsole } from "utils/printToConsole.mjs";
 
 // // import server from "server/originalCreateApp.mjs";
 // import openPage from 'server/request/session.mjs';
@@ -55,10 +56,9 @@ export async function execute(context) {
 
     const src = argv.src || argv.S;
     if (!src) {
-      console.log(
+      printToConsole(
         chalk.red(`Missing --src /relative or "absolute/path/from/root"`)
       );
-      process.exit();
       return;
     }
 
@@ -69,19 +69,19 @@ export async function execute(context) {
     //   const session = express.open('/');
     //   session.onOpen = () => {
     //     debugger
-    //     console.log();
+    //     printToConsole();
     //   }
     // };
 
     // express.onRemoteHostReady = (remoteHost) => {
 
     //   debugger
-    //   console.log('remote host available at:', remoteHost);
+    //   printToConsole('remote host available at:', remoteHost);
 
     //   // const session = express.open('/');
     //   // session.onOpen = () => {
     //   //   debugger
-    //   //   console.log();
+    //   //   printToConsole();
     //   // }
     // };
 

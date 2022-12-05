@@ -1,4 +1,5 @@
 import { createRequire } from "module";
+import { printToConsole } from "./printToConsole.mjs";
 const require = createRequire(import.meta.url);
 
 const chalk = require("chalk");
@@ -28,10 +29,10 @@ export function menu(dict) {
       let n = 1;
       for (let e of entries) {
 
-        console.log(`${n++}.`, chalk.yellow(e[0]))
+        printToConsole(`${n++}.`, chalk.yellow(e[0]))
       }
 
-      console.log('');
+      printToConsole('');
 
       const promptFields = [{
         name: 'input',

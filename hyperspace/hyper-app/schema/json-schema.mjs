@@ -5,7 +5,6 @@ const ajv = new Ajv({ allErrors: true }); // options can be passed, e.g. {allErr
 
 ////////////////////////////////////////////
 // JSON SCHEMA WORK IN PROGRESS
-// TODO finish it
 // https://ajv.js.org/json-schema.html#json-data-type
 
 const JsonSchemaTypes = {

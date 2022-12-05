@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 var hyperClient;
 
 function createHyperClient() {
@@ -36,7 +37,7 @@ function createHyperClient() {
 
   // ACTIONS
   function sendAction(data) { ws.send("action:", JSON.stringify(data)); }
-  const actionIO = { ws, receive: null };
+  const actionIO = { ws, receive: null, send: sendAction };
   const actions = createHyperActions(actionIO);
   
   // STATE
@@ -46,10 +47,12 @@ function createHyperClient() {
 
   // MESSAGE DISPATCHER
   ws.onmessage = (event) => {
+    debugger
+
     if (event.data.startsWith("state:")) {
       const payload = event.data.slice(6);
       const parsed = JSON.parse(payload);
-      stateIO.receive(parsed.data);
+      stateIO.receive(parsed);
     } else if (event.data.startsWith("action:")) {
       const payload = event.data.slice(7);
       actionIO.receive(JSON.parse(payload));
@@ -70,13 +73,9 @@ function createHyperClient() {
   const init = () => {
     cnt++;
     if (!Reflect.has(window, "WebSocket")) {
-      setTimeout(() => {
-        init();
-      }, 0);
+      console.error('WebSocket not available');
       return;
     }
-
-    document.title = cnt + ' tries';
 
     window.hyperClient = createHyperClient();
     window.state = window.hyperClient.state;

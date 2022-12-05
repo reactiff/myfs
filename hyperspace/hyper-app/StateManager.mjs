@@ -1,26 +1,26 @@
 import _ from "lodash";
 
 export default class StateManager {
+  _controller;
   _state = {};
   _hooks = [];
 
-  constructor(initialState) {
+  constructor(controller, initialState) {
+    this._controller = controller;
     this._state = initialState;
   }
 
-  getAffectedCallbacks(partial) {
-    const affected = [];
+  triggerAffectedHooks() {
     this._hooks.forEach((w) => {
-      const sample = _.get(partial, w.path);
+      const sample = _.get(this._state, w.path);
       if (sample !== undefined) {
         const areEqual = sample == w.snapshot;
         if (!areEqual) {
           w.snapshot = sample;
-          affected.push(w);
+          w.callback(_.get(this._state, w.path), this._state)
         }
       }
     });
-    return affected;
   }
 
   getState(path) {
@@ -28,10 +28,14 @@ export default class StateManager {
     return this._state;
   }
 
-  update(data) {
-    const callbacks = this.getAffectedCallbacks(data);
-    Object.assign(this._state, data);
-    callbacks.forEach((w) => w.callback(_.get(this._state, w.path)));
+  setState(newState) {
+    this._state = newState;
+    this.triggerAffectedHooks();
+  }
+
+  updateState(path, data) {
+    _.set(this._state, path, data);
+    this.triggerAffectedHooks();
   }
 
   // subscriptions to state changes

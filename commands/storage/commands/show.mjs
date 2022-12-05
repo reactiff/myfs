@@ -4,6 +4,7 @@ import { printBanner } from "utils/printBanner.mjs";
 import columnify from "columnify";
 import boxen from "boxen";
 import chalk from "chalk";
+import { printToConsole } from "utils/printToConsole.mjs";
 
 // COMMAND MODULE PROPS
 export const command = "show [keys..]"
@@ -40,8 +41,8 @@ export async function execute(context) {
       ? chalk.gray("(empty)")
       : columnify(data);
 
-    console.log();
-    console.log(boxen(content, { 
+      printToConsole();
+      printToConsole(boxen(content, { 
       title: "Storage Index",
       dimBorder: true,
       textAlignment: 'center',
@@ -50,7 +51,7 @@ export async function execute(context) {
       showHeaders: false
     }));
 
-    console.log();
+    printToConsole();
 
     return;
   } catch (ex) {

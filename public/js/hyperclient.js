@@ -49,7 +49,7 @@ function createHyperClient() {
     if (event.data.startsWith("state:")) {
       const payload = event.data.slice(6);
       const parsed = JSON.parse(payload);
-      stateIO.receive(parsed.data);;
+      stateIO.receive(parsed.data);
     } else if (event.data.startsWith("action:")) {
       const payload = event.data.slice(7);
       actionIO.receive(JSON.parse(payload));
@@ -66,6 +66,7 @@ function createHyperClient() {
 }
 
 (() => {
+  debugger
   let cnt = 0;
   const init = () => {
     cnt++;

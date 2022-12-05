@@ -26,7 +26,7 @@ function print(results, scope) {
 export async function execute(context) {
   try {
 
-    debugger
+     debugger
 
     const opts = initOptions(context.argv);
     
@@ -47,17 +47,18 @@ export async function execute(context) {
     const { dir } = opts;
     const serveResults = terminalServeSearchResults;
 
-    const myfs = new MyFS();
 
-    const results = myfs
-      .options(opts)
-      .path(dir)
-      .sort(opts.sorter)
-      .onResults((update) => {
-        debugger;
-        serveResults(update, { dir: opts.dir, myfs, opts });
-      })
-      .execute();
+    const results = await MyFS.execute(opts);
+    
+    debugger
+    // const results = myfs
+    //   .path(dir)
+    //   .sort(opts.sorter)
+    //   .onResults((update) => {
+    //     debugger;
+    //     serveResults(update, { dir: opts.dir, myfs, opts });
+    //   })
+    //   .execute();
 
 
     print(results, { dir, opts });

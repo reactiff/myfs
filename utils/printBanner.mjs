@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import { createRequire } from "module";
+import { printToConsole } from "./printToConsole.mjs";
 
 const require = createRequire(import.meta.url);
 const boxen = require("boxen");
@@ -11,5 +12,5 @@ export const printBanner = (text, options = {}) => {
     backgroundColor: options.backgroundColor || options.bgColor || undefined,
     margin: options.margin || 0
   });
-  console.log( chalk.bold(content) );
+  printToConsole( chalk.bold(content) );
 };

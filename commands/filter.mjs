@@ -1,5 +1,6 @@
 import { ShowHelp } from "utils/help.mjs";
 import inspectErrorStack from "utils/inspectErrorStack.mjs";
+import { printToConsole } from "utils/printToConsole.mjs";
 import store from "utils/store/index.mjs";
 
 // COMMAND MODULE PROPS
@@ -12,7 +13,7 @@ export async function execute(context) {
 
     if (context.tail === 'filter') {
       const filter = store.get('filter');
-      console.log(filter);
+      printToConsole(filter);
     }
     
     return ShowHelp;

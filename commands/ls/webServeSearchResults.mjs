@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { getSearchResultSorter } from "./sort.mjs";
 // import e from "hyperspace/etag.mjs";
-// import { createApp } from "hyperspace/createApp.mjs";
+import { createApp } from "hyperspace/createApp.mjs";
 // import { mergeViewData } from 'hyperspace/server/mergeViewData.mjs';
 
 function createItemTemplate() {
@@ -71,19 +71,19 @@ export function webServeSearchResults(update, scope) {
   // })
 
   // hyper.onMessage((page, ws, message) => {
-  //   console.log('rx:', message);
+  //   printToConsole('rx:', message);
   // })
 
   // hyper.onDisconnect((page, ws) => {
-  //   console.log('page disconnected:', ws.url);
+  //   printToConsole('page disconnected:', ws.url);
   // })
 
   // hyper.onPageClose(page => {
-  //   console.log('~ page closed:', page.url);
+  //   printToConsole('~ page closed:', page.url);
   // })
 
   // hyper.onAppShutdown(app => {
-  //   console.log('~ app terminated:', app.name);
+  //   printToConsole('~ app terminated:', app.name);
   // })
 }
 

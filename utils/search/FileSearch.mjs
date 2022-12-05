@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import ContentSearchResult from "./ContentSearchResult.mjs";
 import { parseRegexInput } from "../parseRegexInput.mjs";
+import { printToConsole } from "../printToConsole.mjs";
 
 export default class FileSearch {
   file;
@@ -39,7 +40,7 @@ export default class FileSearch {
         if (this.errorCount) return;
         this.errorCount++;
         inspectErrorStack(error);
-        console.log(chalk.bgHex("#550000")(error.stack));
+        printToConsole(chalk.bgHex("#550000")(error.stack));
         this._terminate(false, error);
         this._onSearchComplete();
       });

@@ -33,8 +33,6 @@ export function loadCommand(context) {
 
 export async function parseCommandContext(parentContext, depth, args) {
         
-    // TODO
-
     // If command has positional arguments then it is the tail command
 
     const tracer = new Tracer('parseCommandContext').enter();
